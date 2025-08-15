@@ -5,90 +5,137 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Velcorr's Models</title>
 <style>
-/* THEME STYLES */
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #120012, #1a001a);
-  color: white;
-  text-align: center;
-  min-height: 100vh;
-  overflow-y: scroll;
-}
-h1 {
-  margin-top: 20px;
-  text-shadow: 0 0 10px #ff00ff;
-}
-nav {
-  margin-bottom: 20px;
-}
-nav a {
-  display: inline-block;
-  margin: 10px;
-  padding: 10px 20px;
-  background-color: #4b0082;
-  color: white;
-  text-decoration: none;
-  border-radius: 8px;
-  box-shadow: 0 0 10px #4b0082;
-  transition: 0.3s;
-}
-nav a:hover {
-  background-color: #6a0dad;
-  box-shadow: 0 0 20px #ff00ff;
-}
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
 
-/* MODEL STYLES */
-.container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  max-width: 1200px;
-  margin: auto;
-}
-.model {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  margin: 10px;
-  padding: 8px;
-  width: 180px;
-  text-align: center;
-  box-shadow: 0 0 10px #6a0dad;
-  transition: 0.3s;
-}
-.model:hover {
-  box-shadow: 0 0 20px #ff00ff;
-}
-.model img {
-  max-width: 100%;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.1);
-}
-.model-id {
-  margin-top: 6px;
-  font-size: 12px;
-  word-break: break-all;
-  text-shadow: 0 0 5px #ff00ff;
-}
-.copy-btn {
-  margin-top: 5px;
-  padding: 4px 8px;
-  background-color: #4b0082;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.3s;
-  font-size: 12px;
-  box-shadow: 0 0 5px #6a0dad;
-}
-.copy-btn:hover {
-  background-color: #6a0dad;
-  box-shadow: 0 0 15px #ff00ff;
-}
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Orbitron', sans-serif;
+    background: linear-gradient(135deg, #1a0033, #3b0066);
+    color: #fff;
+    position: relative;
+    padding: 20px;
+    min-height: 100vh;
+  }
+
+  #particles {
+    position: fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    z-index: 0;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 3rem;
+    color: #fff;
+    text-shadow: 0 0 10px #6600cc, 0 0 20px #9933ff;
+    margin-bottom: 30px;
+    position: relative;
+    z-index: 1;
+  }
+
+  nav {
+    text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  nav a {
+    display: inline-block;
+    margin: 10px;
+    padding: 10px 20px;
+    background-color: #4b0082;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    box-shadow: 0 0 10px #4b0082;
+    transition: 0.3s;
+  }
+
+  nav a:hover {
+    background-color: #6a0dad;
+    box-shadow: 0 0 20px #ff00ff;
+  }
+
+  .collection {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .model {
+    background: rgba(30,0,50,0.6);
+    border: 2px solid #fff;
+    border-radius: 15px;
+    padding: 15px;
+    text-align: center;
+    width: 180px;
+    box-shadow: 0 0 20px #6600cc, 0 0 40px #9933ff;
+    transition: 0.3s all;
+    position: relative;
+  }
+
+  .model:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 40px #6600cc, 0 0 80px #9933ff;
+  }
+
+  .model img {
+    max-width: 100%;
+    border-radius: 10px;
+    border: 1px solid #fff;
+    box-shadow: 0 0 10px #fff;
+  }
+
+  .model-id {
+    margin-top: 8px;
+    font-size: 0.9em;
+    color: #ccc;
+    word-wrap: break-word;
+    text-shadow: 0 0 5px #fff;
+  }
+
+  .copy-btn {
+    margin-top: 6px;
+    padding: 5px 10px;
+    background: transparent;
+    border: 2px solid #fff;
+    border-radius: 8px;
+    color: #fff;
+    font-family: 'Orbitron', sans-serif;
+    cursor: pointer;
+    text-shadow: 0 0 5px #fff;
+    box-shadow: 0 0 10px #6600cc, 0 0 20px #9933ff;
+    transition: 0.2s all;
+  }
+
+  .copy-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px #6600cc, 0 0 40px #9933ff;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 40px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    color: #ccc;
+    text-shadow: 0 0 5px #6600cc, 0 0 10px #9933ff;
+    position: relative;
+    z-index: 1;
+  }
 </style>
 </head>
 <body>
+
+<canvas id="particles"></canvas>
 
 <nav>
   <a href="index.html">Home</a>
@@ -98,31 +145,113 @@ nav a:hover {
 
 <h1>Velcorr's Models</h1>
 
-<div class="container">
+<div class="collection">
+  <!-- All your original models copied in -->
   <div class="model">
-    <img src="https://images-ext-1.discordapp.net/external/OLwfKn3OdDKf7tfcBgOROz2agCM8nVCLh8D_ej4BgiY/https/tr.rbxcdn.com/180DAY-a832600788b72f4be4e88fd41b0cb3f0/420/420/Model/Png/noFilter?format=webp&width=1260&height=1260" alt="Model">
-    <div class="model-id">Roblox Model ID: <span>94434308899501</span></div>
-    <button class="copy-btn" onclick="copyID('94434308899501', this)">Copy ID</button>
+    <img src="https://images-ext-1.discordapp.net/external/OLwfKn3OdDKf7tfcBgOROz2agCM8nVCLh8D_ej4BgiY/https/tr.rbxcdn.com/180DAY-a832600788b72f4be4e88fd41b0cb3f0/420/420/Model/Png/noFilter?format=webp&width=1260&height=1260" alt="Model 1">
+    <div class="model-id" data-id="94434308899501">ID: 94434308899501</div>
+    <button class="copy-btn">Copy ID</button>
   </div>
-
   <div class="model">
-    <img src="https://images-ext-1.discordapp.net/external/J2L-I56QDyQVeIKjwHbU-uU9WNKcIsKKkonNmaXt_TM/https/tr.rbxcdn.com/180DAY-ec9ecef54ac2689e20ea257290cbb54b/420/420/Model/Png/noFilter?format=webp&width=1260&height=1260" alt="Model">
-    <div class="model-id">Roblox Model ID: <span>91764800221081</span></div>
-    <button class="copy-btn" onclick="copyID('91764800221081', this)">Copy ID</button>
+    <img src="https://images-ext-1.discordapp.net/external/J2L-I56QDyQVeIKjwHbU-uU9WNKcIsKKkonNmaXt_TM/https/tr.rbxcdn.com/180DAY-ec9ecef54ac2689e20ea257290cbb54b/420/420/Model/Png/noFilter?format=webp&width=1260&height=1260" alt="Model 2">
+    <div class="model-id" data-id="91764800221081">ID: 91764800221081</div>
+    <button class="copy-btn">Copy ID</button>
   </div>
-
-  <!-- Add more models as needed -->
+  <div class="model">
+    <img src="https://images-ext-1.discordapp.net/external/iGY5CvWrz-TTHlKSkJrJ1DGfsOCq7UYpV0rM_a4y3DU/https/tr.rbxcdn.com/180DAY-99b3349cfd93c3d9ebeae9c571bc835a/420/420/Model/Png/noFilter?format=webp&width=1260&height=1260" alt="Model 3">
+    <div class="model-id" data-id="134367377142410">ID: 134367377142410</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+  <div class="model">
+    <img src="https://images-ext-1.discordapp.net/external/yIwtO2erCSyPS9FDT3AtdGZrJAfiVyAIGehojU4HKtc/https/tr.rbxcdn.com/180DAY-1831635ab78f028ff83e3ca4ac56e669/420/420/Model/Png/noFilter?format=webp&width=1260&height=1260" alt="Model 4">
+    <div class="model-id" data-id="122292116623580">ID: 122292116623580</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+  <div class="model">
+    <img src="https://images-ext-1.discordapp.net/external/2dwb4T7vSBRw8x1x4oKFwze7stpdaYKxGpfn6HKPXrA/https/tr.rbxcdn.com/180DAY-c697c31476195345577f8f5f85a78b19/420/420/Model/Png/noFilter?format=webp&width=1260&height=1260" alt="Model 5">
+    <div class="model-id" data-id="123348496612535">ID: 123348496612535</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+  <div class="model">
+    <img src="https://images-ext-1.discordapp.net/external/wTdERqdUVWo44Hd28IauEmH7kkvNC6zQ2jTfoau5msU/https/tr.rbxcdn.com/180DAY-b080bb7ab40fd5c8ce8a3ef5e066fb91/420/420/Model/Png/noFilter?format=webp&width=1260&height=1260" alt="Model 6">
+    <div class="model-id" data-id="78657132679885">ID: 78657132679885</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+  <div class="model">
+    <img src="https://images-ext-1.discordapp.net/external/RlPZWid6z6ErddkYrg8IEfqVe1D3-PE2hQy3MAwFakw/https/tr.rbxcdn.com/180DAY-b8675b0bfb51e1509619956fd368b927/420/420/Model/Png/noFilter?format=webp&width=1260&height=1260" alt="Model 7">
+    <div class="model-id" data-id="83773253789507">ID: 83773253789507</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+  <div class="model">
+    <img src="https://images-ext-1.discordapp.net/external/RjmJCMjwMNQ3aGKKLp3k6dV2uM_9GvEy-CepA95kNag/https/tr.rbxcdn.com/180DAY-91aa81785842e44b871ebc946a196e89/420/420/Model/Png/noFilter?format=webp&width=1260&height=1260" alt="Model 8">
+    <div class="model-id" data-id="113221462390051">ID: 113221462390051</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+  <div class="model">
+    <img src="https://images-ext-1.discordapp.net/external/iYcgd7icBuagt74CWpla7LeVq_aBOC_U4qAB7PIGV_c/https/tr.rbxcdn.com/180DAY-3c439772c3e6f07b13f4aac0e5e6fb3e/420/420/Model/Png/noFilter?format=webp&width=1260&height=1260" alt="Model 9">
+    <div class="model-id" data-id="124252961783020">ID: 124252961783020</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+  <div class="model">
+    <img src="https://images-ext-1.discordapp.net/external/msRgdiZ71qo_wnsumj4h2Rs44NpvdibCT9vVYozbti4/https/tr.rbxcdn.com/180DAY-4b2f6963e813ca4b245253a2183a4d9c/420/420/Model/Png/noFilter?format=webp&width=1260&height=1260" alt="Model 10">
+    <div class="model-id" data-id="82162905758842">ID: 82162905758842</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+  <!-- Add any remaining models in the same pattern here -->
 </div>
 
+<footer>
+Disclaimer: Whatever the decals say doesn't represent me, I'm not a nazi or anything, it's just for ragebait.
+</footer>
+
 <script>
-function copyID(id, button) {
-  navigator.clipboard.writeText(id);
-  const originalText = button.textContent;
-  button.textContent = "Copied!";
-  setTimeout(() => {
-    button.textContent = originalText;
-  }, 1000);
+document.querySelectorAll('.copy-btn').forEach(btn => {
+  btn.addEventListener('click', e => {
+    const idDiv = btn.previousElementSibling;
+    const id = idDiv.dataset.id;
+    navigator.clipboard.writeText(id).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy ID', 1000);
+    });
+  });
+});
+
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const particles = [];
+for(let i=0;i<60;i++){
+  particles.push({
+    x: Math.random()*canvas.width,
+    y: Math.random()*canvas.height,
+    r: Math.random()*2+1,
+    dx: (Math.random()-0.5)*0.5,
+    dy: (Math.random()-0.5)*0.5,
+    color: `hsla(${Math.random()*260+240}, 70%, 60%, 0.5)`
+  });
 }
+
+function animate(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  particles.forEach(p=>{
+    p.x+=p.dx; p.y+=p.dy;
+    if(p.x<0||p.x>canvas.width) p.dx*=-1;
+    if(p.y<0||p.y>canvas.height) p.dy*=-1;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fill();
+  });
+  requestAnimationFrame(animate);
+}
+animate();
+
+window.addEventListener('resize', ()=>{
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
 </script>
 
 </body>
