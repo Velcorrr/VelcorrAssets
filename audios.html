@@ -44,6 +44,7 @@ nav a:hover {
   margin: 10px;
   padding: 10px;
   width: 200px;
+  cursor: pointer;
 }
 .audio img {
   max-width: 100%;
@@ -52,6 +53,7 @@ nav a:hover {
 .audio p {
   word-break: break-all;
   font-size: 14px;
+  margin: 10px 0 0 0;
 }
 </style>
 </head>
@@ -65,12 +67,20 @@ nav a:hover {
 
 <div class="container">
   <!-- Example Audio -->
-  <div class="audio">
+  <div class="audio" onclick="copyID('122128941780330')">
     <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
-    <p>South Park nih beat: 122128941780330</p>
+    <p id="audio-id-1">South Park nih beat: 122128941780330</p>
   </div>
   <!-- Add more audios below -->
 </div>
+
+<script>
+function copyID(id) {
+  navigator.clipboard.writeText(id).then(() => {
+    alert("Copied ID: " + id);
+  });
+}
+</script>
 
 </body>
 </html>
