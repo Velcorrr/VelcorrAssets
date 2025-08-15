@@ -13,10 +13,11 @@ body {
   color: white;
   text-align: center;
   min-height: 100vh;
-  overflow-y: scroll; /* Ensure scroll is possible */
+  overflow-y: scroll;
 }
 h1 {
   margin-top: 20px;
+  text-shadow: 0 0 10px #ff00ff;
 }
 nav {
   margin-bottom: 20px;
@@ -30,11 +31,11 @@ nav a {
   text-decoration: none;
   border-radius: 8px;
   box-shadow: 0 0 10px #4b0082;
-  transition: 0.2s;
+  transition: 0.3s;
 }
 nav a:hover {
   background-color: #6a0dad;
-  box-shadow: 0 0 20px #6a0dad;
+  box-shadow: 0 0 20px #ff00ff;
 }
 
 /* MODEL STYLES */
@@ -47,34 +48,43 @@ nav a:hover {
 }
 .model {
   background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
+  border-radius: 12px;
   margin: 10px;
   padding: 8px;
-  width: 180px; /* Smaller width */
+  width: 180px;
   text-align: center;
+  box-shadow: 0 0 10px #6a0dad;
+  transition: 0.3s;
+}
+.model:hover {
+  box-shadow: 0 0 20px #ff00ff;
 }
 .model img {
   max-width: 100%;
   border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
 }
 .model-id {
   margin-top: 6px;
-  font-size: 12px; /* Smaller font */
+  font-size: 12px;
   word-break: break-all;
+  text-shadow: 0 0 5px #ff00ff;
 }
 .copy-btn {
   margin-top: 5px;
-  padding: 4px 8px; /* Smaller button */
+  padding: 4px 8px;
   background-color: #4b0082;
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: 0.2s;
+  transition: 0.3s;
   font-size: 12px;
+  box-shadow: 0 0 5px #6a0dad;
 }
 .copy-btn:hover {
   background-color: #6a0dad;
+  box-shadow: 0 0 15px #ff00ff;
 }
 </style>
 </head>
@@ -89,7 +99,6 @@ nav a:hover {
 <h1>Velcorr's Models</h1>
 
 <div class="container">
-  <!-- Example Model -->
   <div class="model">
     <img src="https://images-ext-1.discordapp.net/external/OLwfKn3OdDKf7tfcBgOROz2agCM8nVCLh8D_ej4BgiY/https/tr.rbxcdn.com/180DAY-a832600788b72f4be4e88fd41b0cb3f0/420/420/Model/Png/noFilter?format=webp&width=1260&height=1260" alt="Model">
     <div class="model-id">Roblox Model ID: <span>94434308899501</span></div>
@@ -102,71 +111,6 @@ nav a:hover {
     <button class="copy-btn" onclick="copyID('91764800221081', this)">Copy ID</button>
   </div>
 
-  <div class="model">
-    <img src="https://images-ext-1.discordapp.net/external/iGY5CvWrz-TTHlKSkJrJ1DGfsOCq7UYpV0rM_a4y3DU/https/tr.rbxcdn.com/180DAY-99b3349cfd93c3d9ebeae9c571bc835a/420/420/Model/Png/noFilter?format=webp&width=1260&height=1260" alt="Model">
-    <div class="model-id">Roblox Model ID: <span>134367377142410</span></div>
-    <button class="copy-btn" onclick="copyID('134367377142410', this)">Copy ID</button>
-  </div>
-
-  <div class="model">
-    <img src="https://images-ext-1.discordapp.net/external/wTdERqdUVWo44Hd28IauEmH7kkvNC6zQ2jTfoau5msU/https/tr.rbxcdn.com/180DAY-b080bb7ab40fd5c8ce8a3ef5e066fb91/420/420/Model/Png/noFilter?format=webp&width=1260&height=1260" alt="Model">
-    <div class="model-id">Roblox Model ID: <span>78657132679885</span></div>
-    <button class="copy-btn" onclick="copyID('78657132679885', this)">Copy ID</button>
-  </div>
-
-  <div class="model">
-    <img src="https://images-ext-1.discordapp.net/external/RlPZWid6z6ErddkYrg8IEfqVe1D3-PE2hQy3MAwFakw/https/tr.rbxcdn.com/180DAY-b8675b0bfb51e1509619956fd368b927/420/420/Model/Png/noFilter?format=webp&width=1260&height=1260" alt="Model">
-    <div class="model-id">Roblox Model ID: <span>83773253789507</span></div>
-    <button class="copy-btn" onclick="copyID('83773253789507', this)">Copy ID</button>
-  </div>
-
-  <div class="model">
-    <img src="https://images-ext-1.discordapp.net/external/fUjdhW6jt_4nJtMqDIS8JHs9XS-dtex3md5HSycS484/https/tr.rbxcdn.com/180DAY-726c70c384bf16c64e5ab3fef87fc863/420/420/Model/Png/noFilter?format=webp&width=1260&height=1260" alt="Model">
-    <div class="model-id">Roblox Model ID: <span>124140572471756</span></div>
-    <button class="copy-btn" onclick="copyID('124140572471756', this)">Copy ID</button>
-  </div>
-
-  <div class="model">
-    <img src="https://images-ext-1.discordapp.net/external/DMVhu-yG2N-SvPlovtoY_k93TpsmLm73X9H0BxwuN0A/https/tr.rbxcdn.com/180DAY-765764089cf18920ed54b65fc40948eb/420/420/Model/Png/noFilter?format=webp&width=1260&height=1260" alt="Model">
-    <div class="model-id">Roblox Model ID: <span>116571124712728</span></div>
-    <button class="copy-btn" onclick="copyID('116571124712728', this)">Copy ID</button>
-  </div>
-
-  <div class="model">
-    <img src="https://images-ext-1.discordapp.net/external/iYcgd7icBuagt74CWpla7LeVq_aBOC_U4qAB7PIGV_c/https/tr.rbxcdn.com/180DAY-3c439772c3e6f07b13f4aac0e5e6fb3e/420/420/Model/Png/noFilter?format=webp&width=1260&height=1260" alt="Model">
-    <div class="model-id">Roblox Model ID: <span>124252961783020</span></div>
-    <button class="copy-btn" onclick="copyID('124252961783020', this)">Copy ID</button>
-  </div>
-
-  <div class="model">
-    <img src="https://images-ext-1.discordapp.net/external/msRgdiZ71qo_wnsumj4h2Rs44NpvdibCT9vVYozbti4/https/tr.rbxcdn.com/180DAY-4b2f6963e813ca4b245253a2183a4d9c/420/420/Model/Png/noFilter?format=webp&width=1260&height=1260" alt="Model">
-    <div class="model-id">Roblox Model ID: <span>82162905758842</span></div>
-    <button class="copy-btn" onclick="copyID('82162905758842', this)">Copy ID</button>
-  </div>
-
-  <div class="model">
-    <img src="https://images-ext-1.discordapp.net/external/712JMNkA10qivgBrHC_HKnaWFT_gqQ2mSxEFXlBuSNY/https/tr.rbxcdn.com/180DAY-29cec2baaa66dda2e897ea175cad2b89/420/420/Model/Png/noFilter?format=webp&width=1260&height=1260" alt="Model">
-    <div class="model-id">Roblox Model ID: <span>90187325209795</span></div>
-    <button class="copy-btn" onclick="copyID('90187325209795', this)">Copy ID</button>
-  </div>
-
-  <div class="model">
-    <img src="https://images-ext-1.discordapp.net/external/KCQ84A-9qdKX8ejIz_hKPSg9X4UVA6fIOB6Xg6TkIFQ/https/tr.rbxcdn.com/180DAY-995dab927e10fc98976004c1e029ce65/420/420/Model/Png/noFilter?format=webp&width=1260&height=1260" alt="Model">
-    <div class="model-id">Roblox Model ID: <span>95727619242609</span></div>
-    <button class="copy-btn" onclick="copyID('95727619242609', this)">Copy ID</button>
-  </div>
-
-  <div class="model">
-    <img src="https://images-ext-1.discordapp.net/external/yIwtO2erCSyPS9FDT3AtdGZrJAfiVyAIGehojU4HKtc/https/tr.rbxcdn.com/180DAY-1831635ab78f028ff83e3ca4ac56e669/420/420/Model/Png/noFilter?format=webp&width=1260&height=1260" alt="Model">
-    <div class="model-id">Roblox Model ID: <span>122292116623580</span></div>
-    <button class="copy-btn" onclick="copyID('122292116623580', this)">Copy ID</button>
-  </div>
-
-  <div class="model">
-    <img src="https://images-ext-1.discordapp.net/external/2dwb4T7vSBRw8x1x4oKFwze7stpdaYKxGpfn6HKPXrA/https/tr.rbxcdn.com/180DAY-c697c31476195345577f8f5f85a78b19/420/420/Model/Png/noFilter?format=webp&width=1260&height=1260" alt="Model">
-    <div class="model-id">Roblox Model ID: <span>123348496612535</span></div>
-    <button class="copy-btn" onclick="copyID('123348496612535', this)">Copy ID</button>
-  </div>
   <!-- Add more models as needed -->
 </div>
 
@@ -177,7 +121,7 @@ function copyID(id, button) {
   button.textContent = "Copied!";
   setTimeout(() => {
     button.textContent = originalText;
-  }, 1000); // 1 second
+  }, 1000);
 }
 </script>
 
