@@ -1,19 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Velcorr's Audios</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Velcorr's Audios</title>
 <style>
+/* THEME STYLES */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
   background: linear-gradient(135deg, #120012, #1a001a);
   color: white;
   text-align: center;
+  min-height: 100vh;
+  overflow-y: scroll;
 }
 h1 {
   margin-top: 20px;
+  text-shadow: 0 0 10px #ff00ff;
 }
 nav {
   margin-bottom: 20px;
@@ -27,82 +31,97 @@ nav a {
   text-decoration: none;
   border-radius: 8px;
   box-shadow: 0 0 10px #4b0082;
-  transition: 0.2s;
+  transition: 0.3s;
 }
 nav a:hover {
   background-color: #6a0dad;
-  box-shadow: 0 0 20px #6a0dad;
+  box-shadow: 0 0 20px #ff00ff;
 }
+
+/* AUDIO STYLES */
 .container {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  max-width: 1200px;
+  margin: auto;
 }
 .audio {
   background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
+  border-radius: 12px;
   margin: 10px;
   padding: 10px;
-  width: 200px;
+  width: 180px;
+  text-align: center;
+  box-shadow: 0 0 10px #6a0dad;
+  transition: 0.3s;
+}
+.audio:hover {
+  box-shadow: 0 0 20px #ff00ff;
 }
 .audio img {
   max-width: 100%;
   border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
 }
 .audio p {
   word-break: break-all;
-  font-size: 14px;
+  font-size: 13px;
   margin: 10px 0;
+  text-shadow: 0 0 5px #ff00ff;
 }
 .copy-btn {
   margin-top: 5px;
-  padding: 5px 10px;
+  padding: 4px 8px;
   background-color: #4b0082;
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: 0.2s;
+  transition: 0.3s;
+  font-size: 12px;
+  box-shadow: 0 0 5px #6a0dad;
 }
 .copy-btn:hover {
   background-color: #6a0dad;
+  box-shadow: 0 0 15px #ff00ff;
 }
 </style>
 </head>
 <body>
+
 <nav>
   <a href="index.html">Home</a>
   <a href="models.html">Models</a>
   <a href="audios.html">Audios</a>
 </nav>
+
 <h1>Velcorr's Audios</h1>
 
 <div class="container">
-  <!-- Example Audio -->
   <div class="audio">
     <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
-    <p>Loud laughing: <span id="audio-id-1">7558247326</span></p>
+    <p>Loud laughing: <span>7558247326</span></p>
     <button class="copy-btn" onclick="copyID('7558247326', this)">Copy ID</button>
   </div>
 
   <div class="audio">
     <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
-    <p>french fries or chips: <span id="audio-id-1">102482427683665</span></p>
+    <p>French fries or chips: <span>102482427683665</span></p>
     <button class="copy-btn" onclick="copyID('102482427683665', this)">Copy ID</button>
   </div>
 
   <div class="audio">
     <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
-    <p>angry asian mom: <span id="audio-id-1">113101303901600</span></p>
+    <p>Angry Asian mom: <span>113101303901600</span></p>
     <button class="copy-btn" onclick="copyID('113101303901600', this)">Copy ID</button>
   </div>
 
   <div class="audio">
     <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
-    <p>loud farting: <span id="audio-id-1">6974905065</span></p>
+    <p>Loud farting: <span>6974905065</span></p>
     <button class="copy-btn" onclick="copyID('6974905065', this)">Copy ID</button>
   </div>
-  <!-- Add more audios below -->
 </div>
 
 <script>
@@ -112,7 +131,7 @@ function copyID(id, button) {
   button.textContent = "Copied!";
   setTimeout(() => {
     button.textContent = originalText;
-  }, 1000); // 1 second
+  }, 1000);
 }
 </script>
 
