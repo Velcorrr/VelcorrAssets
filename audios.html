@@ -5,134 +5,194 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Velcorr's Audios</title>
 <style>
-/* THEME STYLES */
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #120012, #1a001a);
-  color: white;
-  text-align: center;
-  min-height: 100vh;
-  overflow-y: scroll;
-}
-h1 {
-  margin-top: 20px;
-  text-shadow: 0 0 10px #ff00ff;
-}
-nav {
-  margin-bottom: 20px;
-}
-nav a {
-  display: inline-block;
-  margin: 10px;
-  padding: 10px 20px;
-  background-color: #4b0082;
-  color: white;
-  text-decoration: none;
-  border-radius: 8px;
-  box-shadow: 0 0 10px #4b0082;
-  transition: 0.3s;
-}
-nav a:hover {
-  background-color: #6a0dad;
-  box-shadow: 0 0 20px #ff00ff;
-}
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
 
-/* AUDIO STYLES */
-.container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  max-width: 1200px;
-  margin: auto;
-}
-.audio {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  margin: 10px;
-  padding: 10px;
-  width: 180px;
-  text-align: center;
-  box-shadow: 0 0 10px #6a0dad;
-  transition: 0.3s;
-}
-.audio:hover {
-  box-shadow: 0 0 20px #ff00ff;
-}
-.audio img {
-  max-width: 100%;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.1);
-}
-.audio p {
-  word-break: break-all;
-  font-size: 13px;
-  margin: 10px 0;
-  text-shadow: 0 0 5px #ff00ff;
-}
-.copy-btn {
-  margin-top: 5px;
-  padding: 4px 8px;
-  background-color: #4b0082;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.3s;
-  font-size: 12px;
-  box-shadow: 0 0 5px #6a0dad;
-}
-.copy-btn:hover {
-  background-color: #6a0dad;
-  box-shadow: 0 0 15px #ff00ff;
-}
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Orbitron', sans-serif;
+    background: linear-gradient(135deg, #1a0033, #3b0066);
+    color: #fff;
+    position: relative;
+    padding: 20px;
+    min-height: 100vh;
+  }
+
+  #particles {
+    position: fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    z-index: 0;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 3rem;
+    color: #fff;
+    text-shadow: 0 0 10px #6600cc, 0 0 20px #9933ff;
+    margin-bottom: 30px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .collection {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .audio {
+    background: rgba(30,0,50,0.6);
+    border: 2px solid #fff;
+    border-radius: 15px;
+    padding: 15px;
+    text-align: center;
+    width: 180px;
+    box-shadow: 0 0 20px #6600cc, 0 0 40px #9933ff;
+    transition: 0.3s all;
+    position: relative;
+  }
+
+  .audio:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 40px #6600cc, 0 0 80px #9933ff;
+  }
+
+  .audio img {
+    max-width: 100%;
+    border-radius: 10px;
+    border: 1px solid #fff;
+    box-shadow: 0 0 10px #fff;
+  }
+
+  .audio-id {
+    margin-top: 8px;
+    font-size: 0.9em;
+    color: #ccc;
+    word-wrap: break-word;
+    text-shadow: 0 0 5px #fff;
+  }
+
+  .copy-btn {
+    margin-top: 6px;
+    padding: 5px 10px;
+    background: transparent;
+    border: 2px solid #fff;
+    border-radius: 8px;
+    color: #fff;
+    font-family: 'Orbitron', sans-serif;
+    cursor: pointer;
+    text-shadow: 0 0 5px #fff;
+    box-shadow: 0 0 10px #6600cc, 0 0 20px #9933ff;
+    transition: 0.2s all;
+  }
+
+  .copy-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px #6600cc, 0 0 40px #9933ff;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 40px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    color: #ccc;
+    text-shadow: 0 0 5px #6600cc, 0 0 10px #9933ff;
+    position: relative;
+    z-index: 1;
+  }
 </style>
 </head>
 <body>
 
-<nav>
-  <a href="index.html">Home</a>
-  <a href="models.html">Models</a>
-  <a href="audios.html">Audios</a>
-</nav>
+<canvas id="particles"></canvas>
 
 <h1>Velcorr's Audios</h1>
-
-<div class="container">
+<div class="collection">
+  <!-- Audio entries -->
   <div class="audio">
     <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
-    <p>Loud laughing: <span>7558247326</span></p>
-    <button class="copy-btn" onclick="copyID('7558247326', this)">Copy ID</button>
+    <div class="audio-id" data-id="7558247326">ID: 7558247326</div>
+    <button class="copy-btn">Copy ID</button>
   </div>
-
   <div class="audio">
     <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
-    <p>French fries or chips: <span>102482427683665</span></p>
-    <button class="copy-btn" onclick="copyID('102482427683665', this)">Copy ID</button>
+    <div class="audio-id" data-id="102482427683665">ID: 102482427683665</div>
+    <button class="copy-btn">Copy ID</button>
   </div>
-
   <div class="audio">
     <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
-    <p>Angry Asian mom: <span>113101303901600</span></p>
-    <button class="copy-btn" onclick="copyID('113101303901600', this)">Copy ID</button>
+    <div class="audio-id" data-id="113101303901600">ID: 113101303901600</div>
+    <button class="copy-btn">Copy ID</button>
   </div>
-
   <div class="audio">
     <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
-    <p>Loud farting: <span>6974905065</span></p>
-    <button class="copy-btn" onclick="copyID('6974905065', this)">Copy ID</button>
+    <div class="audio-id" data-id="6974905065">ID: 6974905065</div>
+    <button class="copy-btn">Copy ID</button>
   </div>
+  <!-- Add more audios below exactly like above, none removed -->
 </div>
 
+<footer>
+Disclaimer: These audios are for fun and ragebait purposes only.
+</footer>
+
 <script>
-function copyID(id, button) {
-  navigator.clipboard.writeText(id);
-  const originalText = button.textContent;
-  button.textContent = "Copied!";
-  setTimeout(() => {
-    button.textContent = originalText;
-  }, 1000);
+// Copy ID functionality
+document.querySelectorAll('.copy-btn').forEach(btn => {
+  btn.addEventListener('click', e => {
+    const idDiv = btn.previousElementSibling;
+    const id = idDiv.dataset.id;
+    navigator.clipboard.writeText(id).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy ID', 1000);
+    });
+  });
+});
+
+// Particles background
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const particles = [];
+for(let i=0;i<60;i++){
+  particles.push({
+    x: Math.random()*canvas.width,
+    y: Math.random()*canvas.height,
+    r: Math.random()*2+1,
+    dx: (Math.random()-0.5)*0.5,
+    dy: (Math.random()-0.5)*0.5,
+    color: `hsla(${Math.random()*260+240}, 70%, 60%, 0.5)`
+  });
 }
+
+function animate(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  particles.forEach(p=>{
+    p.x+=p.dx; p.y+=p.dy;
+    if(p.x<0||p.x>canvas.width) p.dx*=-1;
+    if(p.y<0||p.y>canvas.height) p.dy*=-1;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fill();
+  });
+  requestAnimationFrame(animate);
+}
+animate();
+
+window.addEventListener('resize', ()=>{
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
 </script>
 
 </body>
