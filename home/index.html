@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Velcorr's Site</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Orbitron', sans-serif;
+  background: linear-gradient(135deg, #1a0033, #3b0066);
+  color: #fff;
+  text-align: center;
+  position: relative;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+#particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+h1 {
+  margin-top: 50px;
+  font-size: 3rem;
+  text-shadow: 0 0 10px #6600cc, 0 0 20px #9933ff;
+  position: relative;
+  z-index: 1;
+}
+
+nav {
+  margin-top: 30px;
+  position: relative;
+  z-index: 1;
+}
+
+nav a {
+  display: inline-block;
+  margin: 10px;
+  padding: 12px 25px;
+  background-color: #4b0082;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  box-shadow: 0 0 10px #4b0082;
+  transition: 0.3s;
+}
+
+nav a:hover {
+  background-color: #6a0dad;
+  box-shadow: 0 0 20px #ff00ff, 0 0 40px #6a0dad;
+}
+
+.discord-section {
+  margin-top: 50px;
+  position: relative;
+  z-index: 1;
+}
+
+.discord-section h2 {
+  font-size: 2rem;
+  margin-bottom: 15px;
+  text-shadow: 0 0 10px #6600cc, 0 0 20px #ff00ff;
+}
+
+.discord-section a {
+  display: inline-block;
+  padding: 12px 25px;
+  background-color: #5865F2; /* Discord blurple */
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  box-shadow: 0 0 10px #5865F2;
+  transition: 0.3s;
+}
+
+.discord-section a:hover {
+  background-color: #4752C4;
+  box-shadow: 0 0 20px #5865F2, 0 0 40px #4752C4;
+}
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<h1>Velcorr's Stuff</h1>
+<nav>
+  <a href="models.html">Models</a>
+  <a href="audios.html">Audios</a>
+</nav>
+
+<div class="discord-section">
+  <h2>Join the Discord Server</h2>
+  <a href="https://discord.gg/VG9xXWhXzZ" target="_blank">Click Here to Join</a>
+</div>
+
+<script>
+// Particles background
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const particles = [];
+for(let i=0; i<60; i++){
+  particles.push({
+    x: Math.random()*canvas.width,
+    y: Math.random()*canvas.height,
+    r: Math.random()*2+1,
+    dx: (Math.random()-0.5)*0.5,
+    dy: (Math.random()-0.5)*0.5,
+    color: `hsla(${Math.random()*260+240}, 70%, 60%, 0.5)`
+  });
+}
+
+function animate(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  particles.forEach(p=>{
+    p.x += p.dx;
+    p.y += p.dy;
+    if(p.x < 0 || p.x > canvas.width) p.dx *= -1;
+    if(p.y < 0 || p.y > canvas.height) p.dy *= -1;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fill();
+  });
+  requestAnimationFrame(animate);
+}
+animate();
+
+window.addEventListener('resize', ()=>{
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+</script>
+
+</body>
+</html>
