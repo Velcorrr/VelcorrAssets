@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Velcorr's Audios</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Orbitron', sans-serif;
+    background: linear-gradient(135deg, #1a0033, #3b0066);
+    color: #fff;
+    position: relative;
+    padding: 20px;
+    min-height: 100vh;
+  }
+
+  #particles {
+    position: fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    z-index: 0;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 3rem;
+    color: #fff;
+    text-shadow: 0 0 10px #6600cc, 0 0 20px #9933ff;
+    margin-bottom: 30px;
+    position: relative;
+    z-index: 1;
+  }
+
+  nav {
+    text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  nav a {
+    display: inline-block;
+    margin: 10px;
+    padding: 10px 20px;
+    background-color: #4b0082;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    box-shadow: 0 0 10px #4b0082;
+    transition: 0.3s;
+  }
+
+  nav a:hover {
+    background-color: #6a0dad;
+    box-shadow: 0 0 20px #ff00ff;
+  }
+
+  .collection {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .audio {
+    background: rgba(30,0,50,0.6);
+    border: 2px solid #fff;
+    border-radius: 15px;
+    padding: 15px;
+    text-align: center;
+    width: 180px;
+    box-shadow: 0 0 20px #6600cc, 0 0 40px #9933ff;
+    transition: 0.3s all;
+    position: relative;
+  }
+
+  .audio:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 40px #6600cc, 0 0 80px #9933ff;
+  }
+
+  .audio img {
+    max-width: 100%;
+    border-radius: 10px;
+    border: 1px solid #fff;
+    box-shadow: 0 0 10px #fff;
+  }
+
+  .audio-id {
+    margin-top: 8px;
+    font-size: 0.9em;
+    color: #ccc;
+    word-wrap: break-word;
+    text-shadow: 0 0 5px #fff;
+  }
+
+  .copy-btn {
+    margin-top: 6px;
+    padding: 5px 10px;
+    background: transparent;
+    border: 2px solid #fff;
+    border-radius: 8px;
+    color: #fff;
+    font-family: 'Orbitron', sans-serif;
+    cursor: pointer;
+    text-shadow: 0 0 5px #fff;
+    box-shadow: 0 0 10px #6600cc, 0 0 20px #9933ff;
+    transition: 0.2s all;
+  }
+
+  .copy-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px #6600cc, 0 0 40px #9933ff;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 40px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    color: #ccc;
+    text-shadow: 0 0 5px #6600cc, 0 0 10px #9933ff;
+    position: relative;
+    z-index: 1;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<!-- Navigation buttons added here -->
+<nav>
+  <a href="index.html">Home</a>
+  <a href="models.html">Models</a>
+  <a href="audios.html">Audios</a>
+</nav>
+
+<h1>Velcorr's Audios</h1>
+<div class="collection">
+  <!-- Audio entries -->
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="7558247326">Loud laughing ID: 7558247326</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="102482427683665">Annoying ass kid ID: 102482427683665</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="113101303901600">Angry Asian mom ID: 113101303901600</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="6974905065">Farting ID: 6974905065</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="107029127210856">fuck u nga sped up ID: 107029127210856</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="100572682952965">Imma bust when u bust ID: 100572682952965</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="135530750255814">Nazi anthem sped up a little ID: 135530750255814</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="98068369998804">South park nga ID: 98068369998804</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="86055205820571">Im a fucking nga ID: 86055205820571</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="93927211034078">Im rubbing peanut butter on my cock ID: 93927211034078</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="80943040984784">Nga Nga Nga ID: 80943040984784</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="113183872661366">your all faggots ID: 113183872661366</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="71424276344481">nigger spam ID: 71424276344481</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="129548477364846">nigger spam ID: 129548477364846</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="82617267224321">loud ass noise ID: 82617267224321</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="84053721930502">nigger spam ID: 84053721930502</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="99468240251510">nigger spam ID: 99468240251510</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="118503448794044">niggers ID: 118503448794044</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="128007736042530">quiet tts nigger ID: 128007736042530</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="8848794078">knee gah ID: 8848794078</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="123724742034632">weird glitch nigger but very clear ID: 123724742034632</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="8970668528">niiigga ID: 8970668528</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="9090200724">I wanna buy goddam racing car my nigga ID: 9090200724</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="113398562359892">skibidi bop nigger ID: 113398562359892</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+
+  <div class="audio">
+    <img src="https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/original/4X/a/2/6/a2602ab9b20cbea9a6f8a36858ef1fe4fb599c04.png" alt="Audio">
+    <div class="audio-id" data-id="1877359621">high pitched nigger ID: 1877359621</div>
+    <button class="copy-btn">Copy ID</button>
+  </div>
+</div>
+
+<footer>
+Disclaimer: I dont upload any these tbh I just log them and get them from random people but i do upload the decals.
+</footer>
+
+<script>
+// Copy ID functionality
+document.querySelectorAll('.copy-btn').forEach(btn => {
+  btn.addEventListener('click', e => {
+    const idDiv = btn.previousElementSibling;
+    const id = idDiv.dataset.id;
+    navigator.clipboard.writeText(id).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy ID', 1000);
+    });
+  });
+});
+
+// Particles background
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const particles = [];
+for(let i=0;i<60;i++){
+  particles.push({
+    x: Math.random()*canvas.width,
+    y: Math.random()*canvas.height,
+    r: Math.random()*2+1,
+    dx: (Math.random()-0.5)*0.5,
+    dy: (Math.random()-0.5)*0.5,
+    color: `hsla(${Math.random()*260+240}, 70%, 60%, 0.5)`
+  });
+}
+
+function animate(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  particles.forEach(p=>{
+    p.x+=p.dx; p.y+=p.dy;
+    if(p.x<0||p.x>canvas.width) p.dx*=-1;
+    if(p.y<0||p.y>canvas.height) p.dy*=-1;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fill();
+  });
+  requestAnimationFrame(animate);
+}
+animate();
+
+window.addEventListener('resize', ()=>{
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+</script>
+
+</body>
+</html>
