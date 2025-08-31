@@ -3,136 +3,202 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Velcorr's Site</title>
+<title>Your Video Page</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-body {
-  font-family: 'Orbitron', sans-serif;
-  background: linear-gradient(135deg, #1a0033, #3b0066);
-  color: #fff;
-  text-align: center;
-  position: relative;
-  min-height: 100vh;
-  padding: 20px;
-}
+  body {
+    font-family: 'Orbitron', sans-serif;
+    background: linear-gradient(135deg, #000, #001a33);
+    color: #fff;
+    position: relative;
+    padding: 20px;
+    min-height: 100vh;
+  }
 
-#particles {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-}
+  #particles {
+    position: fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    z-index: 0;
+  }
 
-h1 {
-  margin-top: 50px;
-  font-size: 3rem;
-  text-shadow: 0 0 10px #6600cc, 0 0 20px #9933ff;
-  position: relative;
-  z-index: 1;
-}
+  h1 {
+    text-align: center;
+    font-size: 3rem;
+    color: #00ccff;
+    text-shadow: 0 0 15px #00ccff, 0 0 30px #00ffff;
+    margin-bottom: 30px;
+    position: relative;
+    z-index: 1;
+  }
 
-nav {
-  margin-top: 30px;
-  position: relative;
-  z-index: 1;
-}
+  nav {
+    text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+  }
 
-nav a {
-  display: inline-block;
-  margin: 10px;
-  padding: 12px 25px;
-  background-color: #4b0082;
-  color: white;
-  text-decoration: none;
-  border-radius: 8px;
-  box-shadow: 0 0 10px #4b0082;
-  transition: 0.3s;
-}
+  nav a {
+    display: inline-block;
+    margin: 10px;
+    padding: 10px 20px;
+    background-color: #003366;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    box-shadow: 0 0 10px #0066cc;
+    transition: 0.3s;
+  }
 
-nav a:hover {
-  background-color: #6a0dad;
-  box-shadow: 0 0 20px #ff00ff, 0 0 40px #6a0dad;
-}
+  nav a:hover {
+    background-color: #004c99;
+    box-shadow: 0 0 20px #00ccff;
+  }
 
-.discord-section {
-  margin-top: 50px;
-  position: relative;
-  z-index: 1;
-}
+  .video-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 30px;
+    position: relative;
+    z-index: 1;
+  }
 
-.discord-section h2 {
-  font-size: 2rem;
-  margin-bottom: 15px;
-  text-shadow: 0 0 10px #6600cc, 0 0 20px #ff00ff;
-}
+  iframe {
+    width: 80%;
+    height: 450px;
+    border-radius: 15px;
+    border: 3px solid #00ccff;
+    box-shadow: 0 0 30px #00ccff;
+  }
 
-.discord-section a {
-  display: inline-block;
-  padding: 12px 25px;
-  background-color: #5865F2; /* Discord blurple */
-  color: white;
-  text-decoration: none;
-  border-radius: 8px;
-  box-shadow: 0 0 10px #5865F2;
-  transition: 0.3s;
-}
+  .input-area {
+    max-width: 500px;
+    margin: 0 auto;
+    background: rgba(0,20,40,0.8);
+    border: 2px solid #00ccff;
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 0 30px #00ccff;
+    position: relative;
+    z-index: 1;
+  }
 
-.discord-section a:hover {
-  background-color: #4752C4;
-  box-shadow: 0 0 20px #5865F2, 0 0 40px #4752C4;
-}
+  .input-area label {
+    display: block;
+    margin: 15px 0 5px;
+    font-size: 1.1rem;
+    color: #00ccff;
+    text-shadow: 0 0 10px #00ccff;
+  }
+
+  .input-area input {
+    width: 80%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 2px solid #00ccff;
+    background: #000;
+    color: #fff;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1rem;
+    margin-bottom: 15px;
+    outline: none;
+    box-shadow: 0 0 15px #00ccff;
+  }
+
+  .submit-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 2px solid #00ccff;
+    background: black;
+    color: #00ccff;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 0 20px #00ccff;
+    transition: 0.2s;
+  }
+
+  .submit-btn:hover {
+    background: #002244;
+    transform: scale(1.05);
+    box-shadow: 0 0 40px #00ccff;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 40px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem;
+    color: #ccc;
+    text-shadow: 0 0 10px #00ccff;
+    position: relative;
+    z-index: 1;
+  }
 </style>
 </head>
 <body>
 
 <canvas id="particles"></canvas>
 
-<h1>Velcorr's Stuff</h1>
 <nav>
-  <a href="/VelcorrAssets/models/">Models</a>
-  <a href="/VelcorrAssets/audios/">Audios</a>
+  <a href="#">Home</a>
+  <a href="#">Models</a>
+  <a href="#">Audios</a>
 </nav>
 
-<div class="discord-section">
-  <h2>Join the Discord Server</h2>
-  <a href="https://discord.gg/5vvTbe4GuJ" target="_blank">Click Here to Join</a>
+<h1>Custom Video Page</h1>
+
+<div class="video-container">
+  <!-- Change VIDEO_ID to any YouTube video ID -->
+  <iframe src="https://www.youtube.com/embed/VIDEO_ID" frameborder="0" allowfullscreen></iframe>
 </div>
 
+<div class="input-area">
+  <label for="code">Enter Code:</label>
+  <input type="text" id="code" placeholder="Enter code here">
+  
+  <label for="followers">Followers Amount:</label>
+  <input type="number" id="followers" placeholder="Enter followers amount">
+  
+  <button class="submit-btn">Submit</button>
+</div>
+
+<footer>
+  Made with 💙 in Blue & Black theme
+</footer>
+
 <script>
-// Particles background
 const canvas = document.getElementById('particles');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 const particles = [];
-for(let i=0; i<60; i++){
+for(let i=0;i<60;i++){
   particles.push({
     x: Math.random()*canvas.width,
     y: Math.random()*canvas.height,
     r: Math.random()*2+1,
     dx: (Math.random()-0.5)*0.5,
     dy: (Math.random()-0.5)*0.5,
-    color: `hsla(${Math.random()*260+240}, 70%, 60%, 0.5)`
+    color: 'rgba(0, 204, 255, 0.8)'
   });
 }
 
 function animate(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   particles.forEach(p=>{
-    p.x += p.dx;
-    p.y += p.dy;
-    if(p.x < 0 || p.x > canvas.width) p.dx *= -1;
-    if(p.y < 0 || p.y > canvas.height) p.dy *= -1;
+    p.x+=p.dx; p.y+=p.dy;
+    if(p.x<0||p.x>canvas.width) p.dx*=-1;
+    if(p.y<0||p.y>canvas.height) p.dy*=-1;
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = "#00ccff";
     ctx.fillStyle = p.color;
     ctx.beginPath();
     ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
