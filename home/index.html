@@ -1,66 +1,77 @@
-local Players = game:GetService("Players")
-local HttpService = game:GetService("HttpService")
-
-local webhookUrl = "https://discord.com/api/webhooks/XXXXXXXX/XXXXXXXX"
-local player = Players.LocalPlayer
-
--- UI
-local screenGui = Instance.new("ScreenGui")
-screenGui.Parent = player:WaitForChild("PlayerGui")
-
--- follower label
-local followersLabel = Instance.new("TextLabel")
-followersLabel.Size = UDim2.new(0, 200, 0, 50)
-followersLabel.Position = UDim2.new(0.5, -100, 0.2, 0)
-followersLabel.TextScaled = true
-followersLabel.BackgroundColor3 = Color3.fromRGB(30,30,30)
-followersLabel.TextColor3 = Color3.fromRGB(255,255,255)
-followersLabel.Text = "Followers: 0"
-followersLabel.Parent = screenGui
-
--- enter code button
-local enterButton = Instance.new("TextButton")
-enterButton.Size = UDim2.new(0, 200, 0, 50)
-enterButton.Position = UDim2.new(0.5, -100, 0.4, 0)
-enterButton.TextScaled = true
-enterButton.BackgroundColor3 = Color3.fromRGB(50,100,200)
-enterButton.TextColor3 = Color3.fromRGB(255,255,255)
-enterButton.Text = "Enter Code"
-enterButton.Parent = screenGui
-
--- input box for code
-local codeBox = Instance.new("TextBox")
-codeBox.Size = UDim2.new(0, 200, 0, 50)
-codeBox.Position = UDim2.new(0.5, -100, 0.5, 0)
-codeBox.TextScaled = true
-codeBox.PlaceholderText = "Type code here"
-codeBox.BackgroundColor3 = Color3.fromRGB(20,20,20)
-codeBox.TextColor3 = Color3.fromRGB(255,255,255)
-codeBox.Parent = screenGui
-
--- send code to discord
-local function sendToDiscord(code)
-    local data = {
-        ["content"] = player.Name .. " entered code: " .. code
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Code Entry</title>
+  <style>
+    body {
+      background: #1e1e1e;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
     }
-    local jsonData = HttpService:JSONEncode(data)
+    .box {
+      background: #2c2c2c;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+      border-radius: 5px;
+      border: none;
+    }
+    input {
+      width: 200px;
+    }
+    button {
+      background: #3273dc;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #265aab;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2 id="followers">Followers: 0</h2>
+    <input id="codeBox" type="text" placeholder="Type code here">
+    <br>
+    <button onclick="sendToDiscord()">Enter Code</button>
+  </div>
 
-    local success, response = pcall(function()
-        return HttpService:PostAsync(webhookUrl, jsonData, Enum.HttpContentType.ApplicationJson)
-    end)
+  <script>
+    // Replace with your real webhook
+    const webhookUrl = "https://discord.com/api/webhooks/XXXXXXXX/XXXXXXXX";
 
-    if success then
-        print("✅ Sent code to Discord!")
-    else
-        warn("❌ Error sending: " .. tostring(response))
-    end
-end
+    function sendToDiscord() {
+      const code = document.getElementById("codeBox").value;
+      if (!code) return;
 
--- button action
-enterButton.MouseButton1Click:Connect(function()
-    local code = codeBox.Text
-    if code ~= "" then
-        sendToDiscord(code)
-        codeBox.Text = ""
-    end
-end)
+      fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: "Someone entered code: " + code })
+      })
+      .then(res => {
+        if (res.ok) {
+          alert("✅ Sent code to Discord!");
+          document.getElementById("codeBox").value = "";
+        } else {
+          alert("❌ Error sending code.");
+        }
+      })
+      .catch(err => alert("❌ Request failed: " + err));
+    }
+  </script>
+</body>
+</html>
