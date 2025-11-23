@@ -2,651 +2,469 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Discord Clone - Global Chat</title>
-    <!-- Load MQTT.js for real-time messaging -->
-    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <title>Mood Scene: SpongeBob & Gary</title>
     <style>
-        /* --- RESET & BASIC VARIABLES --- */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        body { margin: 0; overflow: hidden; background-color: #05070a; }
+        canvas { display: block; }
+        #loading {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: #fff; font-family: sans-serif; pointer-events: none;
         }
-
-        :root {
-            --bg-tertiary: #202225;
-            --bg-secondary: #2f3136;
-            --bg-primary: #36393f;
-            --bg-chat-header: #36393f;
-            --channel-hover: #34373c;
-            --channel-active: #393c43;
-            --text-normal: #dcddde;
-            --text-muted: #72767d;
-            --interactive-normal: #b9bbbe;
-            --interactive-hover: #dcddde;
-            --input-bg: #40444b;
-            --accent: #5865F2;
-            --accent-hover: #4752C4;
-            --danger: #ed4245;
-            --divider: #303136;
-        }
-
-        body {
-            background-color: var(--bg-primary);
-            color: var(--text-normal);
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-        }
-
-        /* --- SERVER RAIL (Leftmost) --- */
-        .server-rail {
-            width: 72px;
-            background-color: var(--bg-tertiary);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding-top: 12px;
-            overflow-y: auto;
-        }
-
-        .server-icon {
-            width: 48px;
-            height: 48px;
-            background-color: var(--bg-primary);
-            border-radius: 50%;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: 0.2s;
-            position: relative;
-            color: var(--text-normal);
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .server-icon:hover {
-            border-radius: 16px;
-            background-color: var(--accent);
-            color: white;
-        }
-
-        .server-icon.active {
-            border-radius: 16px;
-            background-color: var(--accent);
-        }
-
-        .server-icon.home {
-            background-image: url('https://assets-global.website-files.com/6257adef93867e56f84d3101/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png');
-            background-size: cover;
-            background-color: #36393f;
-        }
-        .server-icon.home:hover { background-color: var(--accent); }
-
-        .separator {
-            width: 32px;
-            height: 2px;
-            background-color: var(--bg-secondary);
-            margin-bottom: 8px;
-        }
-
-        /* --- SIDEBAR (Channels) --- */
-        .sidebar {
-            width: 240px;
-            background-color: var(--bg-secondary);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .server-header {
-            height: 48px;
-            padding: 12px 16px;
-            font-weight: bold;
-            box-shadow: 0 1px 0 rgba(4,4,5,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .server-header:hover { background-color: #34373c; }
-
-        .channels {
-            flex: 1;
-            padding: 8px;
-            overflow-y: auto;
-        }
-
-        .category {
-            text-transform: uppercase;
-            font-size: 12px;
-            font-weight: bold;
-            color: var(--text-muted);
-            margin-top: 16px;
-            margin-bottom: 4px;
-            padding-left: 8px;
-        }
-        .category:hover { color: var(--text-normal); }
-
-        .channel {
-            display: flex;
-            align-items: center;
-            padding: 6px 8px;
-            margin-bottom: 2px;
-            border-radius: 4px;
-            cursor: pointer;
-            color: var(--text-muted);
-        }
-
-        .channel:hover {
-            background-color: var(--channel-hover);
-            color: var(--text-normal);
-        }
-
-        .channel.active {
-            background-color: var(--channel-active);
-            color: white;
-        }
-
-        .channel span { margin-left: 6px; }
-        .hashtag { font-size: 20px; line-height: 10px; color: var(--text-muted); }
-
-        /* --- USER AREA (Bottom Sidebar) --- */
-        .user-area {
-            height: 52px;
-            background-color: #292b2f;
-            display: flex;
-            align-items: center;
-            padding: 0 8px;
-        }
-
-        .avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background-color: var(--accent); /* Random color logic later */
-            margin-right: 8px;
-            position: relative;
-            cursor: pointer;
-        }
-        
-        .status-indicator {
-            width: 10px;
-            height: 10px;
-            background-color: #3ba55c; /* Online green */
-            border-radius: 50%;
-            position: absolute;
-            bottom: -2px;
-            right: -2px;
-            border: 2px solid #292b2f;
-        }
-
-        .user-info {
-            flex: 1;
-            cursor: pointer;
-        }
-
-        .username {
-            font-size: 14px;
-            font-weight: bold;
-            color: white;
-            white-space: nowrap;
-        }
-
-        .discriminator {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .user-icons {
-            display: flex;
-        }
-        .icon-btn {
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            cursor: pointer;
-            color: var(--text-normal);
-        }
-        .icon-btn:hover { background-color: var(--bg-primary); }
-
-        /* --- MAIN CHAT AREA --- */
-        .chat-area {
-            flex: 1;
-            background-color: var(--bg-primary);
-            display: flex;
-            flex-direction: column;
-            min-width: 0; /* Prevent flex overflow */
-        }
-
-        .chat-header {
-            height: 48px;
-            padding: 0 16px;
-            display: flex;
-            align-items: center;
-            box-shadow: 0 1px 0 rgba(4,4,5,0.2);
-            font-weight: bold;
-        }
-
-        .chat-header .hashtag { margin-right: 8px; font-size: 24px; }
-        .topic {
-            margin-left: 16px;
-            font-size: 14px;
-            color: var(--text-muted);
-            font-weight: normal;
-            border-left: 1px solid var(--text-muted);
-            padding-left: 16px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .messages-wrapper {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px 0;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; background-color: #2e3338; }
-        ::-webkit-scrollbar-thumb { background-color: #202225; border-radius: 4px; }
-        ::-webkit-scrollbar-track { background-color: #2e3338; }
-
-        .message {
-            display: flex;
-            padding: 6px 16px;
-            margin-top: 2px;
-        }
-        .message:hover { background-color: rgba(4, 4, 5, 0.07); }
-
-        .message-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: var(--accent);
-            margin-right: 16px;
-            flex-shrink: 0;
-            cursor: pointer;
-        }
-        .message-avatar:hover { opacity: 0.8; }
-
-        .message-content {
-            min-width: 0;
-            word-wrap: break-word;
-        }
-
-        .message-header {
-            display: flex;
-            align-items: baseline;
-        }
-
-        .msg-username {
-            font-weight: 500;
-            color: white;
-            margin-right: 8px;
-            cursor: pointer;
-        }
-        .msg-username:hover { text-decoration: underline; }
-
-        .msg-timestamp {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .msg-text {
-            color: #dcddde;
-            line-height: 1.375rem;
-        }
-
-        /* Input Area */
-        .input-area {
-            padding: 0 16px 24px;
-            background-color: var(--bg-primary);
-        }
-
-        .input-wrapper {
-            background-color: var(--input-bg);
-            border-radius: 8px;
-            padding: 11px 16px;
-            display: flex;
-            align-items: center;
-        }
-
-        .input-wrapper input {
-            background: transparent;
-            border: none;
-            color: var(--text-normal);
-            font-size: 1rem;
-            width: 100%;
-            outline: none;
-        }
-
-        /* Connection Status */
-        #status-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background: #eda63a;
-            color: white;
-            text-align: center;
-            font-size: 12px;
-            padding: 2px;
-            display: none;
-            z-index: 999;
-        }
-
-        /* Modal for Username */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal {
-            background: var(--bg-primary);
-            padding: 24px;
-            border-radius: 8px;
-            width: 400px;
-            text-align: center;
-        }
-        .modal h2 { margin-bottom: 16px; color: white; }
-        .modal input {
-            width: 100%;
-            padding: 10px;
-            background: var(--bg-tertiary);
-            border: 1px solid #202225;
-            color: white;
-            border-radius: 4px;
-            margin-bottom: 16px;
-        }
-        .modal button {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 10px 24px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .modal button:hover { background-color: var(--accent-hover); }
-
     </style>
 </head>
 <body>
+    <div id="loading">Generating Scene...</div>
 
-    <!-- Connection Status Bar -->
-    <div id="status-bar">Connecting to Global Server...</div>
+    <!-- Import Three.js and OrbitControls from CDN -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
 
-    <!-- Modal for Changing Name -->
-    <div class="modal-overlay" id="username-modal">
-        <div class="modal">
-            <h2>Set your Username</h2>
-            <input type="text" id="new-username" placeholder="Enter new name..." maxlength="20">
-            <button onclick="saveUsername()">Save</button>
-            <button onclick="closeModal()" style="background:transparent;">Cancel</button>
-        </div>
-    </div>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-    <!-- Left Rail (Servers) -->
-    <div class="server-rail">
-        <div class="server-icon home" title="Home"></div>
-        <div class="separator"></div>
-        <div class="server-icon active" title="Global Chat Server">GC</div>
-        <div class="server-icon" title="Gaming">G</div>
-        <div class="server-icon" title="Music">M</div>
-        <div class="server-icon" title="Add Server" style="color:#3ba55c; background: var(--bg-primary);">+</div>
-    </div>
+        // --- SCENE SETUP ---
+        const scene = new THREE.Scene();
+        // Deep dark blue fog for the underwater/murky atmosphere
+        scene.fog = new THREE.FogExp2(0x050a14, 0.035);
+        scene.background = new THREE.Color(0x050a14);
 
-    <!-- Sidebar (Channels) -->
-    <div class="sidebar">
-        <div class="server-header">
-            <span>Global Chat Server</span>
-            <span>&#9662;</span> <!-- Down arrow -->
-        </div>
-        <div class="channels">
-            <div class="category">&#9662; TEXT CHANNELS</div>
-            <div class="channel active">
-                <span class="hashtag">#</span>
-                <span>global-general</span>
-            </div>
-            <div class="channel">
-                <span class="hashtag">#</span>
-                <span>memes</span>
-            </div>
-            <div class="channel">
-                <span class="hashtag">#</span>
-                <span>off-topic</span>
-            </div>
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.set(-4, 2.5, 8); // Similar angle to reference
+        camera.lookAt(1, 0.5, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.0;
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.target.set(0, 1, 0);
+
+        // --- PROCEDURAL TEXTURE GENERATORS ---
+        // Helper to create gritty textures without external images
+        function createNoiseTexture(colorBase, noiseIntensity = 50) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 512;
+            const ctx = canvas.getContext('2d');
             
-            <div class="category">&#9662; VOICE CHANNELS</div>
-            <div class="channel">
-                <span>&#128266;</span>
-                <span>Lounge</span>
-            </div>
-        </div>
+            ctx.fillStyle = colorBase;
+            ctx.fillRect(0,0,512,512);
+            
+            const imgData = ctx.getImageData(0,0,512,512);
+            for(let i=0; i<imgData.data.length; i+=4) {
+                const grain = (Math.random() - 0.5) * noiseIntensity;
+                imgData.data[i] += grain;
+                imgData.data[i+1] += grain;
+                imgData.data[i+2] += grain;
+            }
+            ctx.putImageData(imgData, 0, 0);
+            
+            // Add some "grime" spots
+            for(let i=0; i<20; i++){
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.beginPath();
+                ctx.arc(Math.random()*512, Math.random()*512, Math.random()*50, 0, Math.PI*2);
+                ctx.fill();
+            }
 
-        <!-- User Area -->
-        <div class="user-area">
-            <div class="avatar" id="current-user-avatar" onclick="openModal()">
-                <div class="status-indicator"></div>
-            </div>
-            <div class="user-info" onclick="openModal()">
-                <div class="username" id="current-username">Guest</div>
-                <div class="discriminator" id="current-disc">#0000</div>
-            </div>
-            <div class="user-icons">
-                <div class="icon-btn" title="Mute">&#127897;</div>
-                <div class="icon-btn" title="Deafen">&#127911;</div>
-                <div class="icon-btn" title="Settings" onclick="openModal()">&#9881;</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Chat -->
-    <div class="chat-area">
-        <div class="chat-header">
-            <span class="hashtag">#</span>
-            <span>global-general</span>
-            <span class="topic">The one place where everyone talks. History is cleared on refresh.</span>
-        </div>
-
-        <div class="messages-wrapper" id="messages">
-            <!-- Welcome Message -->
-            <div class="message">
-                <div class="message-avatar" style="background-color: #5865F2;"></div>
-                <div class="message-content">
-                    <div class="message-header">
-                        <span class="msg-username">System</span>
-                        <span class="msg-timestamp">Today at <span id="time-now"></span></span>
-                    </div>
-                    <div class="msg-text">Welcome to the Global Chat! 🌍 <br>This is a standalone HTML Discord clone. Type below to talk to anyone else currently on this page.</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="input-area">
-            <div class="input-wrapper">
-                <input type="text" id="message-input" placeholder="Message #global-general" autocomplete="off">
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // --- CONFIGURATION ---
-        // We use a public MQTT broker for the "backend". 
-        // Anyone subscribed to this topic will receive the messages.
-        const BROKER_URL = 'wss://broker.hivemq.com:8000/mqtt';
-        const TOPIC = 'discord-clone/global-chat/v1';
-        
-        // --- STATE ---
-        let client = null;
-        let username = localStorage.getItem('discord_username') || 'Guest_' + Math.floor(Math.random() * 1000);
-        let discriminator = Math.floor(1000 + Math.random() * 9000);
-        let userColor = localStorage.getItem('discord_color') || getRandomColor();
-        
-        // DOM Elements
-        const messagesContainer = document.getElementById('messages');
-        const inputField = document.getElementById('message-input');
-        const statusBar = document.getElementById('status-bar');
-        const usernameDisplay = document.getElementById('current-username');
-        const discDisplay = document.getElementById('current-disc');
-        const avatarDisplay = document.getElementById('current-user-avatar');
-        const modal = document.getElementById('username-modal');
-        const usernameInput = document.getElementById('new-username');
-
-        // Initialize UI
-        document.getElementById('time-now').innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        updateUserUI();
-
-        // --- MQTT CONNECTION ---
-        statusBar.style.display = 'block';
-        
-        try {
-            client = mqtt.connect(BROKER_URL);
-
-            client.on('connect', function () {
-                console.log('Connected to Global Server');
-                statusBar.style.display = 'none';
-                statusBar.style.backgroundColor = '#3ba55c';
-                statusBar.innerText = "Connected";
-                
-                // Subscribe to the global topic
-                client.subscribe(TOPIC, function (err) {
-                    if (!err) {
-                        // Announce join (optional, kept silent to avoid spam)
-                    }
-                });
-            });
-
-            client.on('message', function (topic, message) {
-                // message is Buffer
-                try {
-                    const data = JSON.parse(message.toString());
-                    renderMessage(data);
-                } catch (e) {
-                    console.error("Invalid message format");
-                }
-            });
-
-            client.on('offline', function() {
-                statusBar.style.display = 'block';
-                statusBar.style.backgroundColor = '#ed4245';
-                statusBar.innerText = "Disconnected... Reconnecting";
-            });
-
-        } catch (e) {
-            alert("Failed to load MQTT library. Make sure you have internet access.");
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = THREE.RepeatWrapping;
+            tex.wrapT = THREE.RepeatWrapping;
+            return tex;
         }
 
-        // --- MESSAGING LOGIC ---
-        inputField.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                const text = inputField.value.trim();
-                if (text.length > 0) {
-                    sendMessage(text);
-                    inputField.value = '';
-                }
-            }
+        const spongeTexture = createNoiseTexture('#c4b835', 40); // Dirty Yellow
+        const pantsTexture = createNoiseTexture('#5c3a1e', 20);  // Brown
+        const skinTexture = createNoiseTexture('#fffdd0', 10);   // Shirt
+        const sandTexture = createNoiseTexture('#3d362b', 60);   // Dark Sand
+        const shellTexture = createNoiseTexture('#d46e8b', 40);  // Pinkish
+        const chairTexture = createNoiseTexture('#8a2828', 60);  // Worn Red
+        const metalTexture = createNoiseTexture('#444444', 80);  // Metal
+
+        // --- MATERIALS ---
+        const matSponge = new THREE.MeshStandardMaterial({ map: spongeTexture, roughness: 0.9, bumpMap: spongeTexture, bumpScale: 0.05 });
+        const matShirt = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 });
+        const matPants = new THREE.MeshStandardMaterial({ map: pantsTexture, roughness: 1.0 });
+        const matTie = new THREE.MeshStandardMaterial({ color: 0x880000, roughness: 0.8 });
+        const matSkin = new THREE.MeshStandardMaterial({ color: 0xffffcc, roughness: 0.5 });
+        const matChair = new THREE.MeshStandardMaterial({ map: chairTexture, roughness: 0.6 });
+        const matChairWhite = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.7 });
+        const matGaryShell = new THREE.MeshStandardMaterial({ map: shellTexture, roughness: 0.4 });
+        const matGaryBody = new THREE.MeshStandardMaterial({ color: 0x7da1c4, roughness: 0.6 }); // Blueish
+        const matEye = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1 });
+        const matPupil = new THREE.MeshStandardMaterial({ color: 0x000000 });
+        const matRedEye = new THREE.MeshStandardMaterial({ color: 0xffcccc, roughness: 0.4 }); // Bloodshot
+
+        // --- ENVIRONMENT ---
+        
+        // Floor (Sand)
+        const floorGeo = new THREE.PlaneGeometry(30, 30, 64, 64);
+        // Add noise to vertices for sand dunes
+        const pos = floorGeo.attributes.position;
+        for(let i=0; i<pos.count; i++){
+            pos.setZ(i, Math.random() * 0.15);
+        }
+        floorGeo.computeVertexNormals();
+        const floor = new THREE.Mesh(floorGeo, new THREE.MeshStandardMaterial({ map: sandTexture, roughness: 1, bumpMap: sandTexture, bumpScale: 0.2 }));
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        // Wall (Corrugated Metal/Bamboo)
+        const wallGroup = new THREE.Group();
+        for(let i=0; i<40; i++) {
+            const plank = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.2, 0.2, 10, 8),
+                new THREE.MeshStandardMaterial({ color: 0x1a2b3c, roughness: 0.8 })
+            );
+            plank.position.set(-10 + (i * 0.5), 5, -5);
+            plank.castShadow = true;
+            plank.receiveShadow = true;
+            wallGroup.add(plank);
+        }
+        scene.add(wallGroup);
+
+        // --- CHARACTERS ---
+
+        // 1. SpongeBob
+        const bobGroup = new THREE.Group();
+        
+        // Head (Sponge)
+        const headGeo = new THREE.BoxGeometry(1.8, 1.8, 0.8);
+        const head = new THREE.Mesh(headGeo, matSponge);
+        head.position.y = 1.6;
+        head.castShadow = true;
+        bobGroup.add(head);
+
+        // Shirt
+        const shirt = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.3, 0.8), matShirt);
+        shirt.position.y = 0.55;
+        shirt.castShadow = true;
+        bobGroup.add(shirt);
+
+        // Pants
+        const pants = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.5, 0.8), matPants);
+        pants.position.y = 0.15;
+        pants.castShadow = true;
+        bobGroup.add(pants);
+
+        // Tie
+        const tieGeo = new THREE.ConeGeometry(0.15, 0.6, 4);
+        const tie = new THREE.Mesh(tieGeo, matTie);
+        tie.rotation.z = Math.PI;
+        tie.position.set(0, 0.4, 0.45);
+        bobGroup.add(tie);
+
+        // Eyes (Tired)
+        const eyeGeo = new THREE.SphereGeometry(0.35, 32, 32);
+        const eyeL = new THREE.Mesh(eyeGeo, matRedEye);
+        const eyeR = new THREE.Mesh(eyeGeo, matRedEye);
+        eyeL.position.set(-0.4, 1.6, 0.35);
+        eyeR.position.set(0.4, 1.6, 0.35);
+        bobGroup.add(eyeL, eyeR);
+
+        // Pupils
+        const pupilGeo = new THREE.SphereGeometry(0.12, 16, 16);
+        const pupL = new THREE.Mesh(pupilGeo, matPupil);
+        const pupR = new THREE.Mesh(pupilGeo, matPupil);
+        pupL.position.set(-0.4, 1.6, 0.65);
+        pupR.position.set(0.4, 1.6, 0.65);
+        bobGroup.add(pupL, pupR);
+
+        // Eyelids (Half closed)
+        const lidGeo = new THREE.SphereGeometry(0.36, 32, 32, 0, Math.PI * 2, 0, Math.PI/2.5);
+        const lidL = new THREE.Mesh(lidGeo, matSponge);
+        lidL.rotation.x = Math.PI / 1.8;
+        lidL.position.set(-0.4, 1.6, 0.35);
+        const lidR = new THREE.Mesh(lidGeo, matSponge);
+        lidR.rotation.x = Math.PI / 1.8;
+        lidR.position.set(0.4, 1.6, 0.35);
+        bobGroup.add(lidL, lidR);
+
+        // Nose
+        const nose = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.8), matSponge);
+        nose.rotation.x = Math.PI / 2;
+        nose.position.set(0, 1.4, 0.6);
+        bobGroup.add(nose);
+
+        // Arms (Slumped)
+        const armGeo = new THREE.CylinderGeometry(0.08, 0.08, 1.2);
+        const armL = new THREE.Mesh(armGeo, matSponge);
+        armL.rotation.z = Math.PI / 3;
+        armL.position.set(-1.3, 0.8, 0);
+        const armR = new THREE.Mesh(armGeo, matSponge);
+        armR.rotation.z = -Math.PI / 3;
+        armR.position.set(1.3, 0.8, 0);
+        bobGroup.add(armL, armR);
+
+        // Legs (Sitting)
+        const legGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.8);
+        const legL = new THREE.Mesh(legGeo, matSponge);
+        legL.rotation.x = -Math.PI / 2;
+        legL.position.set(-0.5, 0.2, 0.6);
+        const legR = new THREE.Mesh(legGeo, matSponge);
+        legR.rotation.x = -Math.PI / 2;
+        legR.position.set(0.5, 0.2, 0.6);
+        bobGroup.add(legL, legR);
+        
+        // Shoes
+        const shoeGeo = new THREE.SphereGeometry(0.25);
+        const shoeL = new THREE.Mesh(shoeGeo, new THREE.MeshStandardMaterial({color: 0x111111}));
+        shoeL.scale.set(1, 0.5, 1.5);
+        shoeL.position.set(-0.5, 0.1, 1.1);
+        const shoeR = shoeL.clone();
+        shoeR.position.set(0.5, 0.1, 1.1);
+        bobGroup.add(shoeL, shoeR);
+
+        // Position SpongeBob
+        bobGroup.position.set(1, 0.5, 0);
+        bobGroup.rotation.x = -0.2; // Slouching back
+        scene.add(bobGroup);
+
+
+        // 2. The Chair (Life Ring Style)
+        const chairGroup = new THREE.Group();
+        
+        // Seat Ring
+        const ringGeo = new THREE.TorusGeometry(1.5, 0.6, 16, 50);
+        const seat = new THREE.Mesh(ringGeo, matChair);
+        seat.rotation.x = Math.PI / 2;
+        seat.position.y = 0.6;
+        seat.scale.set(1, 1, 1.5); // Oval shape
+        chairGroup.add(seat);
+
+        // Add white stripes to chair
+        const strip1 = new THREE.Mesh(new THREE.TorusGeometry(1.51, 0.61, 16, 16, 0.5), matChairWhite);
+        strip1.rotation.x = Math.PI/2; strip1.rotation.z = 0.5; strip1.position.y = 0.6; strip1.scale.set(1,1,1.5);
+        const strip2 = new THREE.Mesh(new THREE.TorusGeometry(1.51, 0.61, 16, 16, 0.5), matChairWhite);
+        strip2.rotation.x = Math.PI/2; strip2.rotation.z = 2.5; strip2.position.y = 0.6; strip2.scale.set(1,1,1.5);
+        chairGroup.add(strip1, strip2);
+
+        // Backrest
+        const backGeo = new THREE.CylinderGeometry(1.8, 1.8, 2.5, 32, 1, true, 0, Math.PI);
+        const back = new THREE.Mesh(backGeo, matChair);
+        back.position.set(0, 2, -0.8);
+        back.scale.set(1, 1, 0.5);
+        // Make it double sided or add thickness? Let's just use a thick torus segment for top
+        const backTop = new THREE.Mesh(new THREE.TorusGeometry(1.8, 0.5, 16, 32, Math.PI), matChair);
+        backTop.position.set(0, 3.25, -0.8);
+        backTop.rotation.z = Math.PI / 2; // Incorrect rotation fix below
+        backTop.rotation.set(0,0,0); // Reset
+        
+        // Simpler backrest approach: Group of cylinders
+        const backRestMesh = new THREE.Mesh(new THREE.BoxGeometry(3.5, 3, 1), matChair);
+        backRestMesh.position.set(0, 2.2, -1.2);
+        chairGroup.add(backRestMesh);
+
+        chairGroup.position.set(1, 0, 0);
+        scene.add(chairGroup);
+
+
+        // 3. Gary
+        const garyGroup = new THREE.Group();
+        
+        // Shell (Pink Spiral) - Approximated with a distorted Sphere/Lathe
+        const shellGeo = new THREE.SphereGeometry(0.8, 32, 32);
+        const shell = new THREE.Mesh(shellGeo, matGaryShell);
+        shell.scale.set(1, 1.2, 1);
+        shell.position.y = 0.8;
+        garyGroup.add(shell);
+
+        // Body
+        const bodyGeo = new THREE.SphereGeometry(0.5, 32, 32);
+        const body = new THREE.Mesh(bodyGeo, matGaryBody);
+        body.scale.set(1, 0.6, 1.5);
+        body.position.y = 0.3;
+        body.position.z = 0.5;
+        garyGroup.add(body);
+
+        // Eye Stalks
+        const stalkGeo = new THREE.CylinderGeometry(0.05, 0.08, 0.8);
+        const stalkL = new THREE.Mesh(stalkGeo, matGaryBody);
+        stalkL.position.set(-0.25, 1.2, 1.0);
+        stalkL.rotation.x = 0.2;
+        stalkL.rotation.z = 0.2;
+        
+        const stalkR = new THREE.Mesh(stalkGeo, matGaryBody);
+        stalkR.position.set(0.25, 1.2, 1.0);
+        stalkR.rotation.x = 0.2;
+        stalkR.rotation.z = -0.2;
+        garyGroup.add(stalkL, stalkR);
+
+        // Eyes
+        const gEyeGeo = new THREE.SphereGeometry(0.2, 16, 16);
+        const gEyeL = new THREE.Mesh(gEyeGeo, matEye);
+        gEyeL.position.set(0, 0.4, 0);
+        stalkL.add(gEyeL);
+        const gEyeR = new THREE.Mesh(gEyeGeo, matEye);
+        gEyeR.position.set(0, 0.4, 0);
+        stalkR.add(gEyeR);
+
+        // Red Pupils
+        const gPupGeo = new THREE.SphereGeometry(0.08, 8, 8);
+        const gPupL = new THREE.Mesh(gPupGeo, new THREE.MeshBasicMaterial({color:0xff0000}));
+        gPupL.position.set(0, 0.15, 0.12);
+        gEyeL.add(gPupL);
+        const gPupR = new THREE.Mesh(gPupGeo, new THREE.MeshBasicMaterial({color:0xff0000}));
+        gPupR.position.set(0, 0.15, 0.12);
+        gEyeR.add(gPupR);
+
+        garyGroup.position.set(-1.5, 0, 2);
+        garyGroup.rotation.y = 0.5;
+        scene.add(garyGroup);
+
+
+        // --- PROPS & DEBRIS (Cans, Bottles, Butts) ---
+        
+        // Can Geometry
+        const canGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.4, 16);
+        const canMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.8, roughness: 0.3 });
+        const redCanMat = new THREE.MeshStandardMaterial({ color: 0xcc0000, metalness: 0.6 });
+
+        for(let i=0; i<15; i++){
+            const can = new THREE.Mesh(canGeo, Math.random()>0.5 ? canMat : redCanMat);
+            can.position.set(
+                (Math.random() - 0.5) * 8,
+                0.2,
+                (Math.random() - 0.5) * 6 + 2
+            );
+            can.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI);
+            can.castShadow = true;
+            scene.add(can);
+        }
+
+        // Cigarette Butts
+        const buttGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.15);
+        const buttMat = new THREE.MeshBasicMaterial({ color: 0xffaa00 }); // Filter color
+        
+        for(let i=0; i<30; i++){
+            const butt = new THREE.Mesh(buttGeo, buttMat);
+            butt.position.set(
+                (Math.random() - 0.5) * 6,
+                0.05,
+                (Math.random() - 0.5) * 6 + 1
+            );
+            butt.rotation.x = Math.PI/2;
+            butt.rotation.y = Math.random() * Math.PI;
+            scene.add(butt);
+        }
+        
+        // Cigarette in hand
+        const cig = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.3), new THREE.MeshBasicMaterial({color: 0xffffff}));
+        cig.rotation.z = Math.PI/2;
+        cig.position.set(-0.2, -0.6, 0); // Relative to arm
+        armL.add(cig);
+
+        // Bottle on table
+        const table = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 0.1), new THREE.MeshStandardMaterial({color:0x3d2614}));
+        table.position.set(3.5, 0.8, 1);
+        // Legs for table
+        const tLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.8), new THREE.MeshStandardMaterial({color:0x3d2614}));
+        tLeg.position.y = -0.4;
+        table.add(tLeg);
+        scene.add(table);
+
+        const bottle = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.6), new THREE.MeshStandardMaterial({color: 0x224422, transparent: true, opacity: 0.8}));
+        bottle.position.set(0, 0.35, 0);
+        table.add(bottle);
+
+
+        // --- LIGHTING (Cinematic) ---
+        
+        const ambientLight = new THREE.AmbientLight(0x112233, 0.3); // Dark Blue Ambient
+        scene.add(ambientLight);
+
+        // Key Light (Top Right, Warm/Dirty) simulates the lamp in the room
+        const spotLight = new THREE.SpotLight(0xffeebb, 150);
+        spotLight.position.set(5, 8, 5);
+        spotLight.target.position.set(0, 0, 0);
+        spotLight.angle = Math.PI / 6;
+        spotLight.penumbra = 0.5;
+        spotLight.castShadow = true;
+        spotLight.shadow.bias = -0.0001;
+        scene.add(spotLight);
+        scene.add(spotLight.target);
+
+        // Rim Light / Fill (Cool Blue from left/back)
+        const rimLight = new THREE.PointLight(0x0044ff, 50, 10);
+        rimLight.position.set(-5, 3, -2);
+        scene.add(rimLight);
+
+        // TV Glow / Low angle light (Front, Flickering)
+        const tvLight = new THREE.PointLight(0xaaccff, 20, 10);
+        tvLight.position.set(-2, 1, 6);
+        scene.add(tvLight);
+
+        // --- PARTICLES (Floating Dust/Smoke) ---
+        const particlesGeo = new THREE.BufferGeometry();
+        const particlesCount = 1000;
+        const posArray = new Float32Array(particlesCount * 3);
+        
+        for(let i=0; i<particlesCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 15;
+        }
+        
+        particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        const particlesMat = new THREE.PointsMaterial({
+            size: 0.05,
+            color: 0xaabbcc,
+            transparent: true,
+            opacity: 0.4,
+            blending: THREE.AdditiveBlending
         });
+        const particleSystem = new THREE.Points(particlesGeo, particlesMat);
+        scene.add(particleSystem);
 
-        function sendMessage(text) {
-            if (!client || !client.connected) {
-                alert("Not connected to server yet.");
-                return;
-            }
 
-            const payload = {
-                user: username,
-                color: userColor,
-                text: text,
-                timestamp: new Date().toISOString()
-            };
+        // --- ANIMATION ---
+        document.getElementById('loading').style.display = 'none';
 
-            // Publish to HiveMQ
-            client.publish(TOPIC, JSON.stringify(payload));
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const time = clock.getElapsedTime();
+            const delta = clock.getDelta();
+
+            controls.update();
+
+            // Flicker TV light
+            tvLight.intensity = 10 + Math.sin(time * 10) * 5 + Math.random() * 5;
+
+            // Float particles
+            particleSystem.rotation.y = time * 0.05;
+            particleSystem.position.y = Math.sin(time * 0.2) * 0.2;
+
+            // Subtle breathing for SpongeBob
+            bobGroup.scale.y = 1 + Math.sin(time * 2) * 0.005;
+            
+            // Gary Eye movement (subtle)
+            stalkL.rotation.z = 0.2 + Math.sin(time) * 0.05;
+            stalkR.rotation.z = -0.2 + Math.cos(time) * 0.05;
+
+            renderer.render(scene, camera);
         }
 
-        function renderMessage(data) {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'message';
+        animate();
 
-            const date = new Date(data.timestamp);
-            const timeStr = isNaN(date.getTime()) ? 'Just now' : date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-
-            // Prevent XSS by encoding text
-            const safeText = escapeHtml(data.text);
-            const safeUser = escapeHtml(data.user);
-
-            msgDiv.innerHTML = `
-                <div class="message-avatar" style="background-color: ${data.color || '#7289da'};"></div>
-                <div class="message-content">
-                    <div class="message-header">
-                        <span class="msg-username">${safeUser}</span>
-                        <span class="msg-timestamp">Today at ${timeStr}</span>
-                    </div>
-                    <div class="msg-text">${safeText}</div>
-                </div>
-            `;
-
-            messagesContainer.appendChild(msgDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-
-        // --- USER SETTINGS ---
-        function updateUserUI() {
-            usernameDisplay.innerText = username;
-            discDisplay.innerText = `#${discriminator}`;
-            avatarDisplay.style.backgroundColor = userColor;
-            localStorage.setItem('discord_username', username);
-            localStorage.setItem('discord_color', userColor);
-        }
-
-        function openModal() {
-            usernameInput.value = username;
-            modal.style.display = 'flex';
-        }
-
-        function closeModal() {
-            modal.style.display = 'none';
-        }
-
-        function saveUsername() {
-            const newName = usernameInput.value.trim();
-            if (newName) {
-                username = newName;
-                updateUserUI();
-                closeModal();
-            }
-        }
-
-        // --- UTILITIES ---
-        function getRandomColor() {
-            const colors = ['#5865F2', '#3BA55C', '#FAA61A', '#ED4245', '#EB459E'];
-            return colors[Math.floor(Math.random() * colors.length)];
-        }
-
-        function escapeHtml(text) {
-            if (!text) return text;
-            return text
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
+        // Handle Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
     </script>
 </body>
 </html>
