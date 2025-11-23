@@ -1,77 +1,652 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Code Entry</title>
-  <style>
-    body {
-      background: #1e1e1e;
-      color: white;
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-    .box {
-      background: #2c2c2c;
-      padding: 20px;
-      border-radius: 10px;
-      text-align: center;
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    }
-    input, button {
-      padding: 10px;
-      margin: 10px 0;
-      font-size: 16px;
-      border-radius: 5px;
-      border: none;
-    }
-    input {
-      width: 200px;
-    }
-    button {
-      background: #3273dc;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #265aab;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Clone - Global Chat</title>
+    <!-- Load MQTT.js for real-time messaging -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <style>
+        /* --- RESET & BASIC VARIABLES --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+
+        :root {
+            --bg-tertiary: #202225;
+            --bg-secondary: #2f3136;
+            --bg-primary: #36393f;
+            --bg-chat-header: #36393f;
+            --channel-hover: #34373c;
+            --channel-active: #393c43;
+            --text-normal: #dcddde;
+            --text-muted: #72767d;
+            --interactive-normal: #b9bbbe;
+            --interactive-hover: #dcddde;
+            --input-bg: #40444b;
+            --accent: #5865F2;
+            --accent-hover: #4752C4;
+            --danger: #ed4245;
+            --divider: #303136;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-normal);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* --- SERVER RAIL (Leftmost) --- */
+        .server-rail {
+            width: 72px;
+            background-color: var(--bg-tertiary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 12px;
+            overflow-y: auto;
+        }
+
+        .server-icon {
+            width: 48px;
+            height: 48px;
+            background-color: var(--bg-primary);
+            border-radius: 50%;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+            color: var(--text-normal);
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .server-icon:hover {
+            border-radius: 16px;
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .server-icon.active {
+            border-radius: 16px;
+            background-color: var(--accent);
+        }
+
+        .server-icon.home {
+            background-image: url('https://assets-global.website-files.com/6257adef93867e56f84d3101/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png');
+            background-size: cover;
+            background-color: #36393f;
+        }
+        .server-icon.home:hover { background-color: var(--accent); }
+
+        .separator {
+            width: 32px;
+            height: 2px;
+            background-color: var(--bg-secondary);
+            margin-bottom: 8px;
+        }
+
+        /* --- SIDEBAR (Channels) --- */
+        .sidebar {
+            width: 240px;
+            background-color: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .server-header {
+            height: 48px;
+            padding: 12px 16px;
+            font-weight: bold;
+            box-shadow: 0 1px 0 rgba(4,4,5,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .server-header:hover { background-color: #34373c; }
+
+        .channels {
+            flex: 1;
+            padding: 8px;
+            overflow-y: auto;
+        }
+
+        .category {
+            text-transform: uppercase;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--text-muted);
+            margin-top: 16px;
+            margin-bottom: 4px;
+            padding-left: 8px;
+        }
+        .category:hover { color: var(--text-normal); }
+
+        .channel {
+            display: flex;
+            align-items: center;
+            padding: 6px 8px;
+            margin-bottom: 2px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .channel:hover {
+            background-color: var(--channel-hover);
+            color: var(--text-normal);
+        }
+
+        .channel.active {
+            background-color: var(--channel-active);
+            color: white;
+        }
+
+        .channel span { margin-left: 6px; }
+        .hashtag { font-size: 20px; line-height: 10px; color: var(--text-muted); }
+
+        /* --- USER AREA (Bottom Sidebar) --- */
+        .user-area {
+            height: 52px;
+            background-color: #292b2f;
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--accent); /* Random color logic later */
+            margin-right: 8px;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            background-color: #3ba55c; /* Online green */
+            border-radius: 50%;
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            border: 2px solid #292b2f;
+        }
+
+        .user-info {
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .username {
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            white-space: nowrap;
+        }
+
+        .discriminator {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .user-icons {
+            display: flex;
+        }
+        .icon-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text-normal);
+        }
+        .icon-btn:hover { background-color: var(--bg-primary); }
+
+        /* --- MAIN CHAT AREA --- */
+        .chat-area {
+            flex: 1;
+            background-color: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            min-width: 0; /* Prevent flex overflow */
+        }
+
+        .chat-header {
+            height: 48px;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 1px 0 rgba(4,4,5,0.2);
+            font-weight: bold;
+        }
+
+        .chat-header .hashtag { margin-right: 8px; font-size: 24px; }
+        .topic {
+            margin-left: 16px;
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: normal;
+            border-left: 1px solid var(--text-muted);
+            padding-left: 16px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .messages-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; background-color: #2e3338; }
+        ::-webkit-scrollbar-thumb { background-color: #202225; border-radius: 4px; }
+        ::-webkit-scrollbar-track { background-color: #2e3338; }
+
+        .message {
+            display: flex;
+            padding: 6px 16px;
+            margin-top: 2px;
+        }
+        .message:hover { background-color: rgba(4, 4, 5, 0.07); }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--accent);
+            margin-right: 16px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .message-avatar:hover { opacity: 0.8; }
+
+        .message-content {
+            min-width: 0;
+            word-wrap: break-word;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: baseline;
+        }
+
+        .msg-username {
+            font-weight: 500;
+            color: white;
+            margin-right: 8px;
+            cursor: pointer;
+        }
+        .msg-username:hover { text-decoration: underline; }
+
+        .msg-timestamp {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .msg-text {
+            color: #dcddde;
+            line-height: 1.375rem;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 0 16px 24px;
+            background-color: var(--bg-primary);
+        }
+
+        .input-wrapper {
+            background-color: var(--input-bg);
+            border-radius: 8px;
+            padding: 11px 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper input {
+            background: transparent;
+            border: none;
+            color: var(--text-normal);
+            font-size: 1rem;
+            width: 100%;
+            outline: none;
+        }
+
+        /* Connection Status */
+        #status-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: #eda63a;
+            color: white;
+            text-align: center;
+            font-size: 12px;
+            padding: 2px;
+            display: none;
+            z-index: 999;
+        }
+
+        /* Modal for Username */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal {
+            background: var(--bg-primary);
+            padding: 24px;
+            border-radius: 8px;
+            width: 400px;
+            text-align: center;
+        }
+        .modal h2 { margin-bottom: 16px; color: white; }
+        .modal input {
+            width: 100%;
+            padding: 10px;
+            background: var(--bg-tertiary);
+            border: 1px solid #202225;
+            color: white;
+            border-radius: 4px;
+            margin-bottom: 16px;
+        }
+        .modal button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .modal button:hover { background-color: var(--accent-hover); }
+
+    </style>
 </head>
 <body>
-  <div class="box">
-    <h2 id="followers">Followers: 0</h2>
-    <input id="codeBox" type="text" placeholder="Type code here">
-    <br>
-    <button onclick="sendToDiscord()">Enter Code</button>
-  </div>
 
-  <script>
-    // Replace with your real webhook
-    const webhookUrl = "https://discord.com/api/webhooks/XXXXXXXX/XXXXXXXX";
+    <!-- Connection Status Bar -->
+    <div id="status-bar">Connecting to Global Server...</div>
 
-    function sendToDiscord() {
-      const code = document.getElementById("codeBox").value;
-      if (!code) return;
+    <!-- Modal for Changing Name -->
+    <div class="modal-overlay" id="username-modal">
+        <div class="modal">
+            <h2>Set your Username</h2>
+            <input type="text" id="new-username" placeholder="Enter new name..." maxlength="20">
+            <button onclick="saveUsername()">Save</button>
+            <button onclick="closeModal()" style="background:transparent;">Cancel</button>
+        </div>
+    </div>
 
-      fetch(webhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: "Someone entered code: " + code })
-      })
-      .then(res => {
-        if (res.ok) {
-          alert("✅ Sent code to Discord!");
-          document.getElementById("codeBox").value = "";
-        } else {
-          alert("❌ Error sending code.");
+    <!-- Left Rail (Servers) -->
+    <div class="server-rail">
+        <div class="server-icon home" title="Home"></div>
+        <div class="separator"></div>
+        <div class="server-icon active" title="Global Chat Server">GC</div>
+        <div class="server-icon" title="Gaming">G</div>
+        <div class="server-icon" title="Music">M</div>
+        <div class="server-icon" title="Add Server" style="color:#3ba55c; background: var(--bg-primary);">+</div>
+    </div>
+
+    <!-- Sidebar (Channels) -->
+    <div class="sidebar">
+        <div class="server-header">
+            <span>Global Chat Server</span>
+            <span>&#9662;</span> <!-- Down arrow -->
+        </div>
+        <div class="channels">
+            <div class="category">&#9662; TEXT CHANNELS</div>
+            <div class="channel active">
+                <span class="hashtag">#</span>
+                <span>global-general</span>
+            </div>
+            <div class="channel">
+                <span class="hashtag">#</span>
+                <span>memes</span>
+            </div>
+            <div class="channel">
+                <span class="hashtag">#</span>
+                <span>off-topic</span>
+            </div>
+            
+            <div class="category">&#9662; VOICE CHANNELS</div>
+            <div class="channel">
+                <span>&#128266;</span>
+                <span>Lounge</span>
+            </div>
+        </div>
+
+        <!-- User Area -->
+        <div class="user-area">
+            <div class="avatar" id="current-user-avatar" onclick="openModal()">
+                <div class="status-indicator"></div>
+            </div>
+            <div class="user-info" onclick="openModal()">
+                <div class="username" id="current-username">Guest</div>
+                <div class="discriminator" id="current-disc">#0000</div>
+            </div>
+            <div class="user-icons">
+                <div class="icon-btn" title="Mute">&#127897;</div>
+                <div class="icon-btn" title="Deafen">&#127911;</div>
+                <div class="icon-btn" title="Settings" onclick="openModal()">&#9881;</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Chat -->
+    <div class="chat-area">
+        <div class="chat-header">
+            <span class="hashtag">#</span>
+            <span>global-general</span>
+            <span class="topic">The one place where everyone talks. History is cleared on refresh.</span>
+        </div>
+
+        <div class="messages-wrapper" id="messages">
+            <!-- Welcome Message -->
+            <div class="message">
+                <div class="message-avatar" style="background-color: #5865F2;"></div>
+                <div class="message-content">
+                    <div class="message-header">
+                        <span class="msg-username">System</span>
+                        <span class="msg-timestamp">Today at <span id="time-now"></span></span>
+                    </div>
+                    <div class="msg-text">Welcome to the Global Chat! 🌍 <br>This is a standalone HTML Discord clone. Type below to talk to anyone else currently on this page.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-wrapper">
+                <input type="text" id="message-input" placeholder="Message #global-general" autocomplete="off">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        // We use a public MQTT broker for the "backend". 
+        // Anyone subscribed to this topic will receive the messages.
+        const BROKER_URL = 'wss://broker.hivemq.com:8000/mqtt';
+        const TOPIC = 'discord-clone/global-chat/v1';
+        
+        // --- STATE ---
+        let client = null;
+        let username = localStorage.getItem('discord_username') || 'Guest_' + Math.floor(Math.random() * 1000);
+        let discriminator = Math.floor(1000 + Math.random() * 9000);
+        let userColor = localStorage.getItem('discord_color') || getRandomColor();
+        
+        // DOM Elements
+        const messagesContainer = document.getElementById('messages');
+        const inputField = document.getElementById('message-input');
+        const statusBar = document.getElementById('status-bar');
+        const usernameDisplay = document.getElementById('current-username');
+        const discDisplay = document.getElementById('current-disc');
+        const avatarDisplay = document.getElementById('current-user-avatar');
+        const modal = document.getElementById('username-modal');
+        const usernameInput = document.getElementById('new-username');
+
+        // Initialize UI
+        document.getElementById('time-now').innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        updateUserUI();
+
+        // --- MQTT CONNECTION ---
+        statusBar.style.display = 'block';
+        
+        try {
+            client = mqtt.connect(BROKER_URL);
+
+            client.on('connect', function () {
+                console.log('Connected to Global Server');
+                statusBar.style.display = 'none';
+                statusBar.style.backgroundColor = '#3ba55c';
+                statusBar.innerText = "Connected";
+                
+                // Subscribe to the global topic
+                client.subscribe(TOPIC, function (err) {
+                    if (!err) {
+                        // Announce join (optional, kept silent to avoid spam)
+                    }
+                });
+            });
+
+            client.on('message', function (topic, message) {
+                // message is Buffer
+                try {
+                    const data = JSON.parse(message.toString());
+                    renderMessage(data);
+                } catch (e) {
+                    console.error("Invalid message format");
+                }
+            });
+
+            client.on('offline', function() {
+                statusBar.style.display = 'block';
+                statusBar.style.backgroundColor = '#ed4245';
+                statusBar.innerText = "Disconnected... Reconnecting";
+            });
+
+        } catch (e) {
+            alert("Failed to load MQTT library. Make sure you have internet access.");
         }
-      })
-      .catch(err => alert("❌ Request failed: " + err));
-    }
-  </script>
+
+        // --- MESSAGING LOGIC ---
+        inputField.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const text = inputField.value.trim();
+                if (text.length > 0) {
+                    sendMessage(text);
+                    inputField.value = '';
+                }
+            }
+        });
+
+        function sendMessage(text) {
+            if (!client || !client.connected) {
+                alert("Not connected to server yet.");
+                return;
+            }
+
+            const payload = {
+                user: username,
+                color: userColor,
+                text: text,
+                timestamp: new Date().toISOString()
+            };
+
+            // Publish to HiveMQ
+            client.publish(TOPIC, JSON.stringify(payload));
+        }
+
+        function renderMessage(data) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message';
+
+            const date = new Date(data.timestamp);
+            const timeStr = isNaN(date.getTime()) ? 'Just now' : date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+            // Prevent XSS by encoding text
+            const safeText = escapeHtml(data.text);
+            const safeUser = escapeHtml(data.user);
+
+            msgDiv.innerHTML = `
+                <div class="message-avatar" style="background-color: ${data.color || '#7289da'};"></div>
+                <div class="message-content">
+                    <div class="message-header">
+                        <span class="msg-username">${safeUser}</span>
+                        <span class="msg-timestamp">Today at ${timeStr}</span>
+                    </div>
+                    <div class="msg-text">${safeText}</div>
+                </div>
+            `;
+
+            messagesContainer.appendChild(msgDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // --- USER SETTINGS ---
+        function updateUserUI() {
+            usernameDisplay.innerText = username;
+            discDisplay.innerText = `#${discriminator}`;
+            avatarDisplay.style.backgroundColor = userColor;
+            localStorage.setItem('discord_username', username);
+            localStorage.setItem('discord_color', userColor);
+        }
+
+        function openModal() {
+            usernameInput.value = username;
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        function saveUsername() {
+            const newName = usernameInput.value.trim();
+            if (newName) {
+                username = newName;
+                updateUserUI();
+                closeModal();
+            }
+        }
+
+        // --- UTILITIES ---
+        function getRandomColor() {
+            const colors = ['#5865F2', '#3BA55C', '#FAA61A', '#ED4245', '#EB459E'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        function escapeHtml(text) {
+            if (!text) return text;
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
 </body>
 </html>
