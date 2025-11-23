@@ -2,20 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Mood Scene: SpongeBob & Gary</title>
+    <title>High Detail Mood Scene</title>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #05070a; }
+        body { margin: 0; overflow: hidden; background-color: #020205; }
         canvas { display: block; }
-        #loading {
+        #loader {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            color: #fff; font-family: sans-serif; pointer-events: none;
+            color: #88aaee; font-family: monospace; font-size: 1.5rem; pointer-events: none;
+            text-shadow: 0 0 10px #0044ff;
+            transition: opacity 1s;
         }
     </style>
 </head>
 <body>
-    <div id="loading">Generating Scene...</div>
+    <div id="loader">Rendering Scene Details...</div>
 
-    <!-- Import Three.js and OrbitControls from CDN -->
     <script type="importmap">
         {
             "imports": {
@@ -28,438 +29,644 @@
     <script type="module">
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
 
-        // --- SCENE SETUP ---
+        // --- SETUP ---
         const scene = new THREE.Scene();
-        // Deep dark blue fog for the underwater/murky atmosphere
-        scene.fog = new THREE.FogExp2(0x050a14, 0.035);
-        scene.background = new THREE.Color(0x050a14);
+        scene.background = new THREE.Color(0x020205);
+        // Thick, murky underwater fog
+        scene.fog = new THREE.FogExp2(0x020408, 0.04);
 
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
-        camera.position.set(-4, 2.5, 8); // Similar angle to reference
-        camera.lookAt(1, 0.5, 0);
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100);
+        // Positioned to look over the TV shoulder
+        camera.position.set(-3.5, 2.2, 9.5); 
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.0;
+        renderer.toneMappingExposure = 1.1;
         document.body.appendChild(renderer.domElement);
 
+        RectAreaLightUniformsLib.init();
+
         const controls = new OrbitControls(camera, renderer.domElement);
+        controls.target.set(0.5, 1, 0);
         controls.enableDamping = true;
-        controls.target.set(0, 1, 0);
+        controls.maxPolarAngle = Math.PI / 1.9; // Don't go below ground
+        controls.minDistance = 2;
+        controls.maxDistance = 15;
 
-        // --- PROCEDURAL TEXTURE GENERATORS ---
-        // Helper to create gritty textures without external images
-        function createNoiseTexture(colorBase, noiseIntensity = 50) {
+        // --- TEXTURE GENERATION ---
+        // We generate high-res procedural textures on the fly
+        function createCanvasTexture(width, height, painter) {
             const canvas = document.createElement('canvas');
-            canvas.width = 512; canvas.height = 512;
+            canvas.width = width; canvas.height = height;
             const ctx = canvas.getContext('2d');
-            
-            ctx.fillStyle = colorBase;
-            ctx.fillRect(0,0,512,512);
-            
-            const imgData = ctx.getImageData(0,0,512,512);
-            for(let i=0; i<imgData.data.length; i+=4) {
-                const grain = (Math.random() - 0.5) * noiseIntensity;
-                imgData.data[i] += grain;
-                imgData.data[i+1] += grain;
-                imgData.data[i+2] += grain;
-            }
-            ctx.putImageData(imgData, 0, 0);
-            
-            // Add some "grime" spots
-            for(let i=0; i<20; i++){
-                ctx.fillStyle = 'rgba(0,0,0,0.3)';
-                ctx.beginPath();
-                ctx.arc(Math.random()*512, Math.random()*512, Math.random()*50, 0, Math.PI*2);
-                ctx.fill();
-            }
-
+            painter(ctx, width, height);
             const tex = new THREE.CanvasTexture(canvas);
             tex.wrapS = THREE.RepeatWrapping;
             tex.wrapT = THREE.RepeatWrapping;
             return tex;
         }
 
-        const spongeTexture = createNoiseTexture('#c4b835', 40); // Dirty Yellow
-        const pantsTexture = createNoiseTexture('#5c3a1e', 20);  // Brown
-        const skinTexture = createNoiseTexture('#fffdd0', 10);   // Shirt
-        const sandTexture = createNoiseTexture('#3d362b', 60);   // Dark Sand
-        const shellTexture = createNoiseTexture('#d46e8b', 40);  // Pinkish
-        const chairTexture = createNoiseTexture('#8a2828', 60);  // Worn Red
-        const metalTexture = createNoiseTexture('#444444', 80);  // Metal
+        function noise(ctx, w, h, intensity = 20, color = null) {
+            if(color) {
+                ctx.fillStyle = color;
+                ctx.fillRect(0,0,w,h);
+            }
+            const iData = ctx.getImageData(0,0,w,h);
+            for(let i=0; i<iData.data.length; i+=4){
+                const v = (Math.random()-0.5) * intensity;
+                iData.data[i] += v;
+                iData.data[i+1] += v;
+                iData.data[i+2] += v;
+            }
+            ctx.putImageData(iData, 0, 0);
+        }
 
-        // --- MATERIALS ---
-        const matSponge = new THREE.MeshStandardMaterial({ map: spongeTexture, roughness: 0.9, bumpMap: spongeTexture, bumpScale: 0.05 });
-        const matShirt = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 });
-        const matPants = new THREE.MeshStandardMaterial({ map: pantsTexture, roughness: 1.0 });
-        const matTie = new THREE.MeshStandardMaterial({ color: 0x880000, roughness: 0.8 });
-        const matSkin = new THREE.MeshStandardMaterial({ color: 0xffffcc, roughness: 0.5 });
-        const matChair = new THREE.MeshStandardMaterial({ map: chairTexture, roughness: 0.6 });
-        const matChairWhite = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.7 });
-        const matGaryShell = new THREE.MeshStandardMaterial({ map: shellTexture, roughness: 0.4 });
-        const matGaryBody = new THREE.MeshStandardMaterial({ color: 0x7da1c4, roughness: 0.6 }); // Blueish
-        const matEye = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1 });
-        const matPupil = new THREE.MeshStandardMaterial({ color: 0x000000 });
-        const matRedEye = new THREE.MeshStandardMaterial({ color: 0xffcccc, roughness: 0.4 }); // Bloodshot
+        // 1. Sponge Texture (Pores + Dirt)
+        const spongeMap = createCanvasTexture(1024, 1024, (ctx, w, h) => {
+            // Base yellow-ish dirt
+            ctx.fillStyle = '#bba830';
+            ctx.fillRect(0,0,w,h);
+            noise(ctx, w, h, 40);
+            
+            // Large Pores
+            for(let i=0; i<60; i++){
+                const x = Math.random()*w;
+                const y = Math.random()*h;
+                const r = Math.random() * 40 + 10;
+                // Shadow for depth
+                const g = ctx.createRadialGradient(x,y, r*0.2, x,y, r);
+                g.addColorStop(0, 'rgba(60, 50, 10, 0.9)'); // Deep hole
+                g.addColorStop(1, 'rgba(180, 160, 50, 0)'); 
+                ctx.fillStyle = g;
+                ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+            }
+            // Stubble/Dirt patches
+            ctx.globalCompositeOperation = 'multiply';
+            for(let i=0; i<500; i++){
+                ctx.fillStyle = 'rgba(50,40,20,0.1)';
+                ctx.fillRect(Math.random()*w, Math.random()*h, 4, 4);
+            }
+        });
+        const matSponge = new THREE.MeshStandardMaterial({ 
+            map: spongeMap, 
+            bumpMap: spongeMap, 
+            bumpScale: 0.15,
+            roughness: 0.9,
+            color: 0xddcc55
+        });
 
-        // --- ENVIRONMENT ---
-        
-        // Floor (Sand)
-        const floorGeo = new THREE.PlaneGeometry(30, 30, 64, 64);
-        // Add noise to vertices for sand dunes
+        // 2. Worn Chair Texture
+        const chairMap = createCanvasTexture(512, 512, (ctx, w, h) => {
+            ctx.fillStyle = '#7a2222';
+            ctx.fillRect(0,0,w,h);
+            noise(ctx, w, h, 60);
+            // Scratches
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            for(let i=0; i<50; i++){
+                ctx.beginPath();
+                ctx.moveTo(Math.random()*w, Math.random()*h);
+                ctx.lineTo(Math.random()*w, Math.random()*h);
+                ctx.stroke();
+            }
+        });
+        const matChair = new THREE.MeshStandardMaterial({ map: chairMap, roughness: 0.6, bumpMap: chairMap, bumpScale: 0.02 });
+        const matChairWhite = new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.7, map: chairMap });
+
+        // 3. Sand Texture
+        const sandMap = createCanvasTexture(1024, 1024, (ctx, w, h) => {
+            ctx.fillStyle = '#2b261c';
+            ctx.fillRect(0,0,w,h);
+            noise(ctx, w, h, 80);
+        });
+        const matSand = new THREE.MeshStandardMaterial({ map: sandMap, bumpMap: sandMap, bumpScale: 0.5, roughness: 1.0 });
+
+        // 4. Gary's Shell
+        const shellMap = createCanvasTexture(512, 512, (ctx, w, h) => {
+            ctx.fillStyle = '#eebbc9';
+            ctx.fillRect(0,0,w,h);
+            noise(ctx, w, h, 30);
+            // Spirals painted manually on geometry or simple patterns here
+            ctx.strokeStyle = '#a34d6b';
+            ctx.lineWidth = 20;
+            ctx.beginPath();
+            for(let i=0; i<w; i+=20) {
+                ctx.moveTo(i, 0); ctx.lineTo(i, h);
+            }
+            ctx.stroke();
+        });
+        const matShell = new THREE.MeshStandardMaterial({ map: shellMap, roughness: 0.4 });
+
+        // 5. Bloodshot Eyes
+        const eyeMap = createCanvasTexture(256, 256, (ctx, w, h) => {
+            ctx.fillStyle = '#fff0f0';
+            ctx.fillRect(0,0,w,h);
+            // Veins
+            ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
+            ctx.lineWidth = 1;
+            for(let i=0; i<30; i++){
+                ctx.beginPath();
+                let x = w/2, y = h/2;
+                ctx.moveTo(x,y);
+                const ang = Math.random() * Math.PI * 2;
+                ctx.quadraticCurveTo(x + Math.cos(ang)*50, y + Math.sin(ang)*50, x + Math.cos(ang)*120, y + Math.sin(ang)*120);
+                ctx.stroke();
+            }
+        });
+        const matEye = new THREE.MeshStandardMaterial({ map: eyeMap, roughness: 0.2, metalness: 0.1 });
+
+
+        // --- SCENE OBJECTS ---
+
+        // Floor
+        const floorGeo = new THREE.PlaneGeometry(40, 40, 128, 128);
         const pos = floorGeo.attributes.position;
-        for(let i=0; i<pos.count; i++){
-            pos.setZ(i, Math.random() * 0.15);
+        for(let i=0; i<pos.count; i++) {
+            // Noisy terrain
+            const x = pos.getX(i);
+            const y = pos.getY(i);
+            const z = 0.2 * Math.sin(x*0.5) * Math.cos(y*0.5) + Math.random() * 0.05;
+            pos.setZ(i, z);
         }
         floorGeo.computeVertexNormals();
-        const floor = new THREE.Mesh(floorGeo, new THREE.MeshStandardMaterial({ map: sandTexture, roughness: 1, bumpMap: sandTexture, bumpScale: 0.2 }));
+        const floor = new THREE.Mesh(floorGeo, matSand);
         floor.rotation.x = -Math.PI / 2;
         floor.receiveShadow = true;
         scene.add(floor);
 
-        // Wall (Corrugated Metal/Bamboo)
-        const wallGroup = new THREE.Group();
-        for(let i=0; i<40; i++) {
-            const plank = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.2, 0.2, 10, 8),
-                new THREE.MeshStandardMaterial({ color: 0x1a2b3c, roughness: 0.8 })
-            );
-            plank.position.set(-10 + (i * 0.5), 5, -5);
-            plank.castShadow = true;
-            plank.receiveShadow = true;
-            wallGroup.add(plank);
+        // Bamboo Wall
+        const bambooGroup = new THREE.Group();
+        const bambooMat = new THREE.MeshStandardMaterial({ color: 0x182a36, roughness: 0.8 });
+        for(let i=-20; i<20; i++) {
+            // Variation in radius and tilt
+            const r = 0.3 + Math.random()*0.1;
+            const cyl = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 12, 8), bambooMat);
+            cyl.position.set(i * 0.7, 5, -6 + (Math.random()*0.5));
+            cyl.rotation.z = (Math.random()-0.5) * 0.1;
+            cyl.rotation.x = (Math.random()-0.5) * 0.1;
+            cyl.castShadow = true;
+            cyl.receiveShadow = true;
+            bambooGroup.add(cyl);
         }
-        scene.add(wallGroup);
+        scene.add(bambooGroup);
 
-        // --- CHARACTERS ---
-
-        // 1. SpongeBob
+        // --- CHARACTER: SPONGEBOB ---
         const bobGroup = new THREE.Group();
+
+        // Deformed Box for Body (Not a perfect cube)
+        const bodyGeo = new THREE.BoxGeometry(2, 2.2, 1, 16, 16, 4);
+        const bPos = bodyGeo.attributes.position;
+        const vector = new THREE.Vector3();
+        for(let i=0; i<bPos.count; i++){
+            vector.set(bPos.getX(i), bPos.getY(i), bPos.getZ(i));
+            // Taper bottom slightly
+            if(vector.y < 0) vector.x *= 0.9;
+            // Sagging effect
+            vector.y -= (vector.x * vector.x) * 0.05; 
+            // Noise
+            vector.x += (Math.random()-0.5)*0.02;
+            vector.y += (Math.random()-0.5)*0.02;
+            vector.z += (Math.random()-0.5)*0.02;
+            bPos.setXYZ(i, vector.x, vector.y, vector.z);
+        }
+        bodyGeo.computeVertexNormals();
+
+        // Split materials for Pants/Shirt/Sponge on one mesh? 
+        // Easier to build separate parts for clarity.
         
-        // Head (Sponge)
-        const headGeo = new THREE.BoxGeometry(1.8, 1.8, 0.8);
+        // 1. Sponge Head
+        const headGeo = new THREE.BoxGeometry(2, 2, 1, 32, 32, 8);
+        // Displace vertices for corners/waviness
+        const hPos = headGeo.attributes.position;
+        for(let i=0; i<hPos.count; i++){
+            const x = hPos.getX(i), y = hPos.getY(i), z = hPos.getZ(i);
+            const wave = Math.sin(x*4)*0.05 + Math.cos(y*4)*0.05;
+            hPos.setXYZ(i, x+wave, y+wave, z);
+        }
+        headGeo.computeVertexNormals();
         const head = new THREE.Mesh(headGeo, matSponge);
-        head.position.y = 1.6;
+        head.position.y = 1.5;
         head.castShadow = true;
         bobGroup.add(head);
 
-        // Shirt
-        const shirt = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.3, 0.8), matShirt);
-        shirt.position.y = 0.55;
+        // 2. Shirt/Pants
+        const pantsGroup = new THREE.Group();
+        const shirtMat = new THREE.MeshStandardMaterial({color:0xeeeeee, roughness:0.9});
+        const pantsMat = new THREE.MeshStandardMaterial({map: createNoiseTexture('#5c3a1e'), roughness:1}); // Brown
+        
+        const shirt = new THREE.Mesh(new THREE.BoxGeometry(2.02, 0.4, 1.02), shirtMat);
+        shirt.position.y = 0.3;
         shirt.castShadow = true;
-        bobGroup.add(shirt);
+        pantsGroup.add(shirt);
 
-        // Pants
-        const pants = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.5, 0.8), matPants);
-        pants.position.y = 0.15;
+        const pants = new THREE.Mesh(new THREE.BoxGeometry(2.02, 0.6, 1.02), pantsMat);
+        pants.position.y = -0.2;
         pants.castShadow = true;
-        bobGroup.add(pants);
+        pantsGroup.add(pants);
 
         // Tie
-        const tieGeo = new THREE.ConeGeometry(0.15, 0.6, 4);
-        const tie = new THREE.Mesh(tieGeo, matTie);
+        const tie = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.6, 4), new THREE.MeshStandardMaterial({color:0xaa0000}));
         tie.rotation.z = Math.PI;
-        tie.position.set(0, 0.4, 0.45);
-        bobGroup.add(tie);
+        tie.position.set(0, 0.15, 0.55);
+        pantsGroup.add(tie);
+        
+        // Collar
+        const collarL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.15, 0.05), shirtMat);
+        collarL.rotation.z = -0.5; collarL.position.set(-0.3, 0.45, 0.52);
+        const collarR = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.15, 0.05), shirtMat);
+        collarR.rotation.z = 0.5; collarR.position.set(0.3, 0.45, 0.52);
+        pantsGroup.add(collarL, collarR);
 
-        // Eyes (Tired)
-        const eyeGeo = new THREE.SphereGeometry(0.35, 32, 32);
-        const eyeL = new THREE.Mesh(eyeGeo, matRedEye);
-        const eyeR = new THREE.Mesh(eyeGeo, matRedEye);
-        eyeL.position.set(-0.4, 1.6, 0.35);
-        eyeR.position.set(0.4, 1.6, 0.35);
-        bobGroup.add(eyeL, eyeR);
+        pantsGroup.position.y = 0.2;
+        bobGroup.add(pantsGroup);
 
-        // Pupils
-        const pupilGeo = new THREE.SphereGeometry(0.12, 16, 16);
-        const pupL = new THREE.Mesh(pupilGeo, matPupil);
-        const pupR = new THREE.Mesh(pupilGeo, matPupil);
-        pupL.position.set(-0.4, 1.6, 0.65);
-        pupR.position.set(0.4, 1.6, 0.65);
-        bobGroup.add(pupL, pupR);
+        // 3. Limbs (Skinny, bent)
+        const limbMat = new THREE.MeshStandardMaterial({color: 0xffffaa, roughness: 0.5});
+        
+        // Legs (Sitting pose)
+        const legL = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.8), limbMat);
+        legL.position.set(-0.6, -0.3, 0.8);
+        legL.rotation.x = -Math.PI/2 + 0.2;
+        legL.castShadow = true;
+        
+        const legR = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.8), limbMat);
+        legR.position.set(0.6, -0.3, 0.8);
+        legR.rotation.x = -Math.PI/2 + 0.2;
+        legR.castShadow = true;
 
-        // Eyelids (Half closed)
-        const lidGeo = new THREE.SphereGeometry(0.36, 32, 32, 0, Math.PI * 2, 0, Math.PI/2.5);
-        const lidL = new THREE.Mesh(lidGeo, matSponge);
-        lidL.rotation.x = Math.PI / 1.8;
-        lidL.position.set(-0.4, 1.6, 0.35);
-        const lidR = new THREE.Mesh(lidGeo, matSponge);
-        lidR.rotation.x = Math.PI / 1.8;
-        lidR.position.set(0.4, 1.6, 0.35);
-        bobGroup.add(lidL, lidR);
+        bobGroup.add(legL, legR);
 
-        // Nose
-        const nose = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.8), matSponge);
-        nose.rotation.x = Math.PI / 2;
-        nose.position.set(0, 1.4, 0.6);
-        bobGroup.add(nose);
+        // Socks & Shoes
+        const sockGeo = new THREE.CylinderGeometry(0.07, 0.07, 0.3);
+        const sockMat = new THREE.MeshStandardMaterial({color: 0xffffff}); // Stripes handled by simple geometry logic? simplified to white
+        const shoeGeo = new THREE.SphereGeometry(0.25, 16, 16);
+        shoeGeo.applyMatrix4(new THREE.Matrix4().makeScale(1, 0.6, 1.4));
+        const shoeMat = new THREE.MeshStandardMaterial({color: 0x111111, roughness: 0.4});
 
-        // Arms (Slumped)
-        const armGeo = new THREE.CylinderGeometry(0.08, 0.08, 1.2);
-        const armL = new THREE.Mesh(armGeo, matSponge);
-        armL.rotation.z = Math.PI / 3;
-        armL.position.set(-1.3, 0.8, 0);
-        const armR = new THREE.Mesh(armGeo, matSponge);
-        armR.rotation.z = -Math.PI / 3;
-        armR.position.set(1.3, 0.8, 0);
+        const footL = new THREE.Group();
+        const sL = new THREE.Mesh(sockGeo, sockMat); sL.rotation.x = Math.PI/2; sL.position.z = -0.15;
+        const shL = new THREE.Mesh(shoeGeo, shoeMat); shL.position.z = 0.1;
+        footL.add(sL, shL);
+        footL.position.set(-0.6, -0.45, 1.2);
+        footL.rotation.x = -0.2; footL.rotation.z = -0.2; // Splayed
+        
+        const footR = footL.clone();
+        footR.position.set(0.6, -0.45, 1.2);
+        footR.rotation.z = 0.2;
+
+        bobGroup.add(footL, footR);
+
+        // Arms (Resting on chair)
+        const armL = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.4), limbMat);
+        armL.position.set(-1.2, 1.0, 0.2);
+        armL.rotation.z = Math.PI/3;
+        armL.rotation.x = 0.2;
+        
+        const armR = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.4), limbMat);
+        armR.position.set(1.2, 1.0, 0.2);
+        armR.rotation.z = -Math.PI/3;
+        armR.rotation.x = 0.2;
+        
         bobGroup.add(armL, armR);
 
-        // Legs (Sitting)
-        const legGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.8);
-        const legL = new THREE.Mesh(legGeo, matSponge);
-        legL.rotation.x = -Math.PI / 2;
-        legL.position.set(-0.5, 0.2, 0.6);
-        const legR = new THREE.Mesh(legGeo, matSponge);
-        legR.rotation.x = -Math.PI / 2;
-        legR.position.set(0.5, 0.2, 0.6);
-        bobGroup.add(legL, legR);
-        
-        // Shoes
-        const shoeGeo = new THREE.SphereGeometry(0.25);
-        const shoeL = new THREE.Mesh(shoeGeo, new THREE.MeshStandardMaterial({color: 0x111111}));
-        shoeL.scale.set(1, 0.5, 1.5);
-        shoeL.position.set(-0.5, 0.1, 1.1);
-        const shoeR = shoeL.clone();
-        shoeR.position.set(0.5, 0.1, 1.1);
-        bobGroup.add(shoeL, shoeR);
+        // Hands
+        const handGeo = new THREE.SphereGeometry(0.15);
+        const handL = new THREE.Mesh(handGeo, limbMat);
+        handL.position.set(0, -0.7, 0);
+        armL.add(handL);
+        const handR = new THREE.Mesh(handGeo, limbMat);
+        handR.position.set(0, -0.7, 0);
+        armR.add(handR);
 
-        // Position SpongeBob
-        bobGroup.position.set(1, 0.5, 0);
-        bobGroup.rotation.x = -0.2; // Slouching back
+        // Cigarette in Left Hand
+        const cig = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.4), new THREE.MeshBasicMaterial({color:0xffffff}));
+        cig.rotation.x = Math.PI/2;
+        cig.position.set(0.1, 0, 0.1);
+        handL.add(cig);
+
+        // Face Features
+        // Eyes
+        const eyeGeo = new THREE.SphereGeometry(0.42, 32, 32);
+        const eyeL = new THREE.Mesh(eyeGeo, matEye);
+        eyeL.position.set(-0.45, 1.6, 0.45);
+        const eyeR = new THREE.Mesh(eyeGeo, matEye);
+        eyeR.position.set(0.45, 1.6, 0.45);
+        bobGroup.add(eyeL, eyeR);
+
+        // Pupils (Dilated)
+        const pupilGeo = new THREE.SphereGeometry(0.16, 16, 16);
+        const pupMat = new THREE.MeshStandardMaterial({color: 0x000000, roughness: 0});
+        const pupL = new THREE.Mesh(pupilGeo, pupMat); pupL.position.set(0,0,0.38); pupL.scale.z = 0.2;
+        const pupR = new THREE.Mesh(pupilGeo, pupMat); pupR.position.set(0,0,0.38); pupR.scale.z = 0.2;
+        eyeL.add(pupL); eyeR.add(pupR);
+
+        // Eyelids (Heavy)
+        const lidGeo = new THREE.SphereGeometry(0.43, 32, 32, 0, Math.PI*2, 0, Math.PI/2.2);
+        const lidMat = new THREE.MeshStandardMaterial({color: 0xccbb44, roughness: 0.8});
+        const lidL = new THREE.Mesh(lidGeo, lidMat); lidL.rotation.x = Math.PI/1.9; lidL.position.copy(eyeL.position);
+        const lidR = new THREE.Mesh(lidGeo, lidMat); lidR.rotation.x = Math.PI/1.9; lidR.position.copy(eyeR.position);
+        bobGroup.add(lidL, lidR);
+
+        // Bags under eyes
+        const bagGeo = new THREE.TorusGeometry(0.3, 0.05, 8, 16, Math.PI);
+        const bagMat = new THREE.MeshBasicMaterial({color: 0x887722, transparent: true, opacity: 0.5});
+        const bagL = new THREE.Mesh(bagGeo, bagMat); bagL.position.set(-0.45, 1.55, 0.5); bagL.rotation.z = Math.PI;
+        const bagR = new THREE.Mesh(bagGeo, bagMat); bagR.position.set(0.45, 1.55, 0.5); bagR.rotation.z = Math.PI;
+        bobGroup.add(bagL, bagR);
+
+        // Nose
+        const nose = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.9), matSponge);
+        nose.rotation.x = Math.PI/2;
+        nose.position.set(0, 1.4, 0.8);
+        bobGroup.add(nose);
+
+        // Mouth (Frown)
+        const mouthGeo = new THREE.TorusGeometry(0.6, 0.05, 8, 20, Math.PI/2);
+        const mouth = new THREE.Mesh(mouthGeo, new THREE.MeshStandardMaterial({color:0x332200}));
+        mouth.rotation.z = Math.PI * 0.75;
+        mouth.position.set(0, 0.9, 0.52);
+        bobGroup.add(mouth);
+
+        // Teeth
+        const toothGeo = new THREE.BoxGeometry(0.18, 0.25, 0.05);
+        const toothMat = new THREE.MeshStandardMaterial({color:0xdddddd});
+        const t1 = new THREE.Mesh(toothGeo, toothMat); t1.position.set(-0.12, 0.75, 0.52); t1.rotation.z = 0.1;
+        const t2 = new THREE.Mesh(toothGeo, toothMat); t2.position.set(0.12, 0.75, 0.52); t2.rotation.z = -0.1;
+        bobGroup.add(t1, t2);
+
+        // Position Bob
+        bobGroup.position.set(0.8, 0.8, 0);
+        bobGroup.rotation.x = -0.2; // Slump
+        bobGroup.castShadow = true;
         scene.add(bobGroup);
 
-
-        // 2. The Chair (Life Ring Style)
+        // --- THE CHAIR ---
         const chairGroup = new THREE.Group();
         
-        // Seat Ring
-        const ringGeo = new THREE.TorusGeometry(1.5, 0.6, 16, 50);
-        const seat = new THREE.Mesh(ringGeo, matChair);
-        seat.rotation.x = Math.PI / 2;
-        seat.position.y = 0.6;
-        seat.scale.set(1, 1, 1.5); // Oval shape
-        chairGroup.add(seat);
-
-        // Add white stripes to chair
-        const strip1 = new THREE.Mesh(new THREE.TorusGeometry(1.51, 0.61, 16, 16, 0.5), matChairWhite);
-        strip1.rotation.x = Math.PI/2; strip1.rotation.z = 0.5; strip1.position.y = 0.6; strip1.scale.set(1,1,1.5);
-        const strip2 = new THREE.Mesh(new THREE.TorusGeometry(1.51, 0.61, 16, 16, 0.5), matChairWhite);
-        strip2.rotation.x = Math.PI/2; strip2.rotation.z = 2.5; strip2.position.y = 0.6; strip2.scale.set(1,1,1.5);
-        chairGroup.add(strip1, strip2);
+        // Main Ring
+        const ringGeo = new THREE.TorusGeometry(1.6, 0.7, 24, 48);
+        const ring = new THREE.Mesh(ringGeo, matChair);
+        ring.rotation.x = Math.PI/2;
+        ring.scale.set(1, 1, 1);
+        ring.castShadow = true;
+        chairGroup.add(ring);
+        
+        // White Stripes
+        const sGeo = new THREE.TorusGeometry(1.61, 0.71, 24, 16, 0.6);
+        const strip1 = new THREE.Mesh(sGeo, matChairWhite); strip1.rotation.x=Math.PI/2; strip1.rotation.z=0.5;
+        const strip2 = new THREE.Mesh(sGeo, matChairWhite); strip2.rotation.x=Math.PI/2; strip2.rotation.z=2.0;
+        const strip3 = new THREE.Mesh(sGeo, matChairWhite); strip3.rotation.x=Math.PI/2; strip3.rotation.z=3.6; // Bottom
+        chairGroup.add(strip1, strip2, strip3);
 
         // Backrest
-        const backGeo = new THREE.CylinderGeometry(1.8, 1.8, 2.5, 32, 1, true, 0, Math.PI);
-        const back = new THREE.Mesh(backGeo, matChair);
-        back.position.set(0, 2, -0.8);
-        back.scale.set(1, 1, 0.5);
-        // Make it double sided or add thickness? Let's just use a thick torus segment for top
-        const backTop = new THREE.Mesh(new THREE.TorusGeometry(1.8, 0.5, 16, 32, Math.PI), matChair);
-        backTop.position.set(0, 3.25, -0.8);
-        backTop.rotation.z = Math.PI / 2; // Incorrect rotation fix below
-        backTop.rotation.set(0,0,0); // Reset
-        
-        // Simpler backrest approach: Group of cylinders
-        const backRestMesh = new THREE.Mesh(new THREE.BoxGeometry(3.5, 3, 1), matChair);
-        backRestMesh.position.set(0, 2.2, -1.2);
-        chairGroup.add(backRestMesh);
+        const backGeo = new THREE.CylinderGeometry(1.6, 1.6, 2.5, 32, 1, true, 3.5, 2.4); // Arc
+        // Actually, let's build a solid back cushion
+        const backCushion = new THREE.Mesh(new THREE.BoxGeometry(3.2, 3, 1.2), matChair);
+        backCushion.position.set(0, 1.5, -1.3);
+        // Add some displacement to look soft
+        chairGroup.add(backCushion);
 
-        chairGroup.position.set(1, 0, 0);
+        chairGroup.position.set(0.8, 0.6, 0);
         scene.add(chairGroup);
 
 
-        // 3. Gary
+        // --- CHARACTER: GARY ---
         const garyGroup = new THREE.Group();
         
-        // Shell (Pink Spiral) - Approximated with a distorted Sphere/Lathe
-        const shellGeo = new THREE.SphereGeometry(0.8, 32, 32);
-        const shell = new THREE.Mesh(shellGeo, matGaryShell);
-        shell.scale.set(1, 1.2, 1);
-        shell.position.y = 0.8;
-        garyGroup.add(shell);
+        // Shell (Spiral Geometry)
+        const shellSpine = [];
+        for(let i=0; i<50; i++){
+            const t = i/50;
+            const angle = t * Math.PI * 4;
+            const r = 0.1 + t * 0.8; // radius grows
+            const y = t * 1.0; 
+            shellSpine.push(new THREE.Vector3(Math.cos(angle)*r, y, Math.sin(angle)*r));
+        }
+        // Approximation using a distorted sphere is often cleaner than tube for spiral shell in pure code
+        const gShellGeo = new THREE.SphereGeometry(0.9, 32, 32);
+        const gShell = new THREE.Mesh(gShellGeo, matShell);
+        gShell.scale.set(0.8, 1.1, 0.8);
+        gShell.position.y = 0.6;
+        gShell.castShadow = true;
+        garyGroup.add(gShell);
 
         // Body
-        const bodyGeo = new THREE.SphereGeometry(0.5, 32, 32);
-        const body = new THREE.Mesh(bodyGeo, matGaryBody);
-        body.scale.set(1, 0.6, 1.5);
-        body.position.y = 0.3;
-        body.position.z = 0.5;
-        garyGroup.add(body);
-
-        // Eye Stalks
-        const stalkGeo = new THREE.CylinderGeometry(0.05, 0.08, 0.8);
-        const stalkL = new THREE.Mesh(stalkGeo, matGaryBody);
-        stalkL.position.set(-0.25, 1.2, 1.0);
-        stalkL.rotation.x = 0.2;
-        stalkL.rotation.z = 0.2;
-        
-        const stalkR = new THREE.Mesh(stalkGeo, matGaryBody);
-        stalkR.position.set(0.25, 1.2, 1.0);
-        stalkR.rotation.x = 0.2;
-        stalkR.rotation.z = -0.2;
-        garyGroup.add(stalkL, stalkR);
+        const gBodyGeo = new THREE.CapsuleGeometry(0.5, 1.5, 4, 16);
+        const gBodyMat = new THREE.MeshStandardMaterial({color: 0x7da1c4, roughness: 0.3, metalness: 0.1});
+        const gBody = new THREE.Mesh(gBodyGeo, gBodyMat);
+        gBody.rotation.x = Math.PI/2;
+        gBody.position.set(0, 0.2, 0.5);
+        garyGroup.add(gBody);
 
         // Eyes
-        const gEyeGeo = new THREE.SphereGeometry(0.2, 16, 16);
-        const gEyeL = new THREE.Mesh(gEyeGeo, matEye);
-        gEyeL.position.set(0, 0.4, 0);
-        stalkL.add(gEyeL);
-        const gEyeR = new THREE.Mesh(gEyeGeo, matEye);
-        gEyeR.position.set(0, 0.4, 0);
-        stalkR.add(gEyeR);
+        const stalkMat = new THREE.MeshStandardMaterial({color: 0x7da1c4});
+        const stalkGeo = new THREE.CylinderGeometry(0.06, 0.1, 1.2);
+        
+        const stalkL = new THREE.Group();
+        stalkL.position.set(-0.3, 0.4, 1.2);
+        const sLm = new THREE.Mesh(stalkGeo, stalkMat); sLm.position.y=0.6; 
+        const eyeBall = new THREE.Mesh(new THREE.SphereGeometry(0.25), matEye); eyeBall.position.y=1.2;
+        const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.1,8,8), new THREE.MeshBasicMaterial({color:0xff0000})); pupil.position.set(0,1.35,0.15);
+        stalkL.add(sLm, eyeBall, pupil);
+        stalkL.rotation.x = 0.3; stalkL.rotation.z = 0.3;
 
-        // Red Pupils
-        const gPupGeo = new THREE.SphereGeometry(0.08, 8, 8);
-        const gPupL = new THREE.Mesh(gPupGeo, new THREE.MeshBasicMaterial({color:0xff0000}));
-        gPupL.position.set(0, 0.15, 0.12);
-        gEyeL.add(gPupL);
-        const gPupR = new THREE.Mesh(gPupGeo, new THREE.MeshBasicMaterial({color:0xff0000}));
-        gPupR.position.set(0, 0.15, 0.12);
-        gEyeR.add(gPupR);
+        const stalkR = stalkL.clone();
+        stalkR.position.set(0.3, 0.4, 1.2);
+        stalkR.rotation.z = -0.3;
 
-        garyGroup.position.set(-1.5, 0, 2);
-        garyGroup.rotation.y = 0.5;
+        garyGroup.add(stalkL, stalkR);
+        
+        garyGroup.position.set(-2.5, 0, 2);
+        garyGroup.rotation.y = 0.8;
         scene.add(garyGroup);
 
 
-        // --- PROPS & DEBRIS (Cans, Bottles, Butts) ---
+        // --- THE TV (Foreground Silhouette) ---
+        const tvGroup = new THREE.Group();
         
-        // Can Geometry
-        const canGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.4, 16);
-        const canMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.8, roughness: 0.3 });
-        const redCanMat = new THREE.MeshStandardMaterial({ color: 0xcc0000, metalness: 0.6 });
+        // Casing
+        const tvCaseGeo = new THREE.BoxGeometry(2.5, 2, 2);
+        const tvMat = new THREE.MeshStandardMaterial({color: 0x111111, roughness: 0.7});
+        const tvCase = new THREE.Mesh(tvCaseGeo, tvMat);
+        tvGroup.add(tvCase);
 
-        for(let i=0; i<15; i++){
-            const can = new THREE.Mesh(canGeo, Math.random()>0.5 ? canMat : redCanMat);
-            can.position.set(
-                (Math.random() - 0.5) * 8,
-                0.2,
-                (Math.random() - 0.5) * 6 + 2
-            );
-            can.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI);
+        // Antenna
+        const antGeo = new THREE.CylinderGeometry(0.02, 0.02, 2);
+        const ant1 = new THREE.Mesh(antGeo, new THREE.MeshStandardMaterial({color:0x888888}));
+        ant1.position.set(-0.5, 1.5, 0); ant1.rotation.z = 0.5;
+        const ant2 = new THREE.Mesh(antGeo, new THREE.MeshStandardMaterial({color:0x888888}));
+        ant2.position.set(0.5, 1.5, 0); ant2.rotation.z = -0.5;
+        tvGroup.add(ant1, ant2);
+
+        // The Screen (Emitter)
+        const screenGeo = new THREE.PlaneGeometry(2, 1.5);
+        const screenMat = new THREE.MeshBasicMaterial({color: 0x88aaff});
+        const tvScreen = new THREE.Mesh(screenGeo, screenMat);
+        tvScreen.position.set(0, 0, -1.01); // Facing Back
+        tvScreen.rotation.y = Math.PI; // Face towards Bob
+        tvGroup.add(tvScreen);
+
+        // TV Light Source
+        const tvLight = new THREE.RectAreaLight(0x4488ff, 10, 2, 1.5);
+        tvLight.position.set(0, 0, -1.1);
+        tvLight.rotation.y = Math.PI;
+        tvLight.lookAt(bobGroup.position);
+        tvGroup.add(tvLight);
+
+        // Place TV in foreground left
+        tvGroup.position.set(-3, 1.5, 6);
+        tvGroup.rotation.y = -0.5; // Angled towards Bob
+        scene.add(tvGroup);
+
+
+        // --- DEBRIS ---
+        // Cans
+        const canGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.45, 16);
+        const canMat = new THREE.MeshStandardMaterial({color:0xaaaaaa, metalness:0.8, roughness:0.3});
+        const redCanMat = new THREE.MeshStandardMaterial({color:0xcc2222, metalness:0.6, roughness:0.4});
+        
+        for(let i=0; i<20; i++){
+            const can = new THREE.Mesh(canGeo, Math.random()>0.6 ? canMat : redCanMat);
+            // Scatter
+            can.position.set((Math.random()-0.5)*10, 0.25, (Math.random()-0.5)*8 + 2);
+            can.rotation.set(Math.random()*3, Math.random()*3, Math.random()*3);
             can.castShadow = true;
             scene.add(can);
         }
 
         // Cigarette Butts
-        const buttGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.15);
-        const buttMat = new THREE.MeshBasicMaterial({ color: 0xffaa00 }); // Filter color
-        
-        for(let i=0; i<30; i++){
-            const butt = new THREE.Mesh(buttGeo, buttMat);
-            butt.position.set(
-                (Math.random() - 0.5) * 6,
-                0.05,
-                (Math.random() - 0.5) * 6 + 1
-            );
-            butt.rotation.x = Math.PI/2;
-            butt.rotation.y = Math.random() * Math.PI;
-            scene.add(butt);
+        const buttGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.12);
+        const buttMat = new THREE.MeshBasicMaterial({color: 0xcc8800});
+        for(let i=0; i<40; i++){
+            const b = new THREE.Mesh(buttGeo, buttMat);
+            b.position.set((Math.random()-0.5)*8, 0.05, (Math.random()-0.5)*8 + 1);
+            b.rotation.x = Math.PI/2;
+            b.rotation.y = Math.random()*3;
+            scene.add(b);
         }
-        
-        // Cigarette in hand
-        const cig = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.3), new THREE.MeshBasicMaterial({color: 0xffffff}));
-        cig.rotation.z = Math.PI/2;
-        cig.position.set(-0.2, -0.6, 0); // Relative to arm
-        armL.add(cig);
 
-        // Bottle on table
-        const table = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 0.1), new THREE.MeshStandardMaterial({color:0x3d2614}));
-        table.position.set(3.5, 0.8, 1);
-        // Legs for table
-        const tLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.8), new THREE.MeshStandardMaterial({color:0x3d2614}));
-        tLeg.position.y = -0.4;
-        table.add(tLeg);
-        scene.add(table);
-
-        const bottle = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.6), new THREE.MeshStandardMaterial({color: 0x224422, transparent: true, opacity: 0.8}));
-        bottle.position.set(0, 0.35, 0);
-        table.add(bottle);
-
-
-        // --- LIGHTING (Cinematic) ---
-        
-        const ambientLight = new THREE.AmbientLight(0x112233, 0.3); // Dark Blue Ambient
-        scene.add(ambientLight);
-
-        // Key Light (Top Right, Warm/Dirty) simulates the lamp in the room
-        const spotLight = new THREE.SpotLight(0xffeebb, 150);
-        spotLight.position.set(5, 8, 5);
-        spotLight.target.position.set(0, 0, 0);
-        spotLight.angle = Math.PI / 6;
-        spotLight.penumbra = 0.5;
-        spotLight.castShadow = true;
-        spotLight.shadow.bias = -0.0001;
-        scene.add(spotLight);
-        scene.add(spotLight.target);
-
-        // Rim Light / Fill (Cool Blue from left/back)
-        const rimLight = new THREE.PointLight(0x0044ff, 50, 10);
-        rimLight.position.set(-5, 3, -2);
-        scene.add(rimLight);
-
-        // TV Glow / Low angle light (Front, Flickering)
-        const tvLight = new THREE.PointLight(0xaaccff, 20, 10);
-        tvLight.position.set(-2, 1, 6);
-        scene.add(tvLight);
-
-        // --- PARTICLES (Floating Dust/Smoke) ---
-        const particlesGeo = new THREE.BufferGeometry();
-        const particlesCount = 1000;
-        const posArray = new Float32Array(particlesCount * 3);
-        
-        for(let i=0; i<particlesCount * 3; i++) {
-            posArray[i] = (Math.random() - 0.5) * 15;
-        }
-        
-        particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-        const particlesMat = new THREE.PointsMaterial({
-            size: 0.05,
-            color: 0xaabbcc,
-            transparent: true,
-            opacity: 0.4,
-            blending: THREE.AdditiveBlending
+        // Empty Bottle
+        const bottleGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.6, 16);
+        const bottleMat = new THREE.MeshPhysicalMaterial({
+            color: 0x225522, transmission: 0.8, opacity: 1, roughness: 0.1, thickness: 0.1
         });
-        const particleSystem = new THREE.Points(particlesGeo, particlesMat);
-        scene.add(particleSystem);
+        const bottle = new THREE.Mesh(bottleGeo, bottleMat);
+        bottle.position.set(2.5, 0.3, 3);
+        bottle.castShadow = true;
+        scene.add(bottle);
 
 
-        // --- ANIMATION ---
-        document.getElementById('loading').style.display = 'none';
+        // --- LIGHTING ---
+        const ambient = new THREE.AmbientLight(0x051020, 0.2);
+        scene.add(ambient);
 
+        // Dirty Overhead Lamp
+        const spot = new THREE.SpotLight(0xffddaa, 100);
+        spot.position.set(2, 10, 2);
+        spot.angle = 0.5;
+        spot.penumbra = 0.5;
+        spot.castShadow = true;
+        spot.shadow.bias = -0.001;
+        scene.add(spot);
+
+        // Rim Light (Cool Blue from back left)
+        const rim = new THREE.SpotLight(0x0044ff, 80);
+        rim.position.set(-8, 5, -5);
+        rim.lookAt(bobGroup.position);
+        scene.add(rim);
+
+        // --- SMOKE PARTICLES ---
+        const smokeParticles = [];
+        const smokeGeo = new THREE.PlaneGeometry(1,1);
+        // Create soft smoke texture
+        const smokeTex = createCanvasTexture(128,128, (ctx, w, h) => {
+            const g = ctx.createRadialGradient(w/2,h/2, 0, w/2,h/2, w/2);
+            g.addColorStop(0, 'rgba(200,200,200,0.5)');
+            g.addColorStop(1, 'rgba(200,200,200,0)');
+            ctx.fillStyle = g;
+            ctx.fillRect(0,0,w,h);
+        });
+        const smokeMat = new THREE.MeshBasicMaterial({
+            map: smokeTex, transparent: true, opacity: 0.3, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide
+        });
+
+        function createSmokeParticle(pos) {
+            const p = new THREE.Mesh(smokeGeo, smokeMat);
+            p.position.copy(pos);
+            p.scale.set(0.1, 0.1, 0.1);
+            // Random velocity
+            p.userData = {
+                vel: new THREE.Vector3((Math.random()-0.5)*0.01, 0.02 + Math.random()*0.01, (Math.random()-0.5)*0.01),
+                age: 0,
+                life: 2 + Math.random()
+            };
+            scene.add(p);
+            smokeParticles.push(p);
+        }
+
+        // Helpers
+        function createNoiseTexture(color) {
+            return createCanvasTexture(256, 256, (ctx, w, h) => {
+                ctx.fillStyle = color; ctx.fillRect(0,0,w,h);
+                noise(ctx,w,h,30);
+            });
+        }
+
+
+        // --- ANIMATION LOOP ---
         const clock = new THREE.Clock();
+        document.getElementById('loader').style.display = 'none';
 
         function animate() {
             requestAnimationFrame(animate);
-            
+            const dt = clock.getDelta();
             const time = clock.getElapsedTime();
-            const delta = clock.getDelta();
 
             controls.update();
 
-            // Flicker TV light
-            tvLight.intensity = 10 + Math.sin(time * 10) * 5 + Math.random() * 5;
+            // TV Flicker
+            const intensity = 5 + Math.sin(time * 15)*2 + Math.cos(time * 35)*3 + Math.random()*3;
+            tvLight.intensity = Math.max(0, intensity);
+            tvScreen.material.color.setHSL(0.6, 0.5, 0.5 + intensity/30);
 
-            // Float particles
-            particleSystem.rotation.y = time * 0.05;
-            particleSystem.position.y = Math.sin(time * 0.2) * 0.2;
+            // Smoke Emission from cigarette
+            // Calculate world position of cigarette tip
+            const handWorld = new THREE.Vector3();
+            handL.getWorldPosition(handWorld);
+            // Offset slightly for tip
+            handWorld.add(new THREE.Vector3(0.1, 0.1, 0)); 
 
-            // Subtle breathing for SpongeBob
-            bobGroup.scale.y = 1 + Math.sin(time * 2) * 0.005;
-            
-            // Gary Eye movement (subtle)
-            stalkL.rotation.z = 0.2 + Math.sin(time) * 0.05;
-            stalkR.rotation.z = -0.2 + Math.cos(time) * 0.05;
+            if(Math.random() > 0.7) createSmokeParticle(handWorld);
+
+            // Update Smoke
+            for(let i=smokeParticles.length-1; i>=0; i--){
+                const p = smokeParticles[i];
+                p.position.add(p.userData.vel);
+                p.userData.age += dt;
+                const s = 0.1 + (p.userData.age * 0.3); // Grow
+                p.scale.set(s,s,s);
+                p.lookAt(camera.position);
+                p.material.opacity = 0.3 * (1 - p.userData.age/p.userData.life);
+
+                if(p.userData.age >= p.userData.life){
+                    scene.remove(p);
+                    smokeParticles.splice(i, 1);
+                }
+            }
+
+            // Subtle idle animations
+            bobGroup.position.y = 0.8 + Math.sin(time * 0.5) * 0.01;
+            stalkL.rotation.z = 0.3 + Math.sin(time)*0.05;
+            stalkR.rotation.z = -0.3 + Math.cos(time)*0.05;
 
             renderer.render(scene, camera);
         }
-
         animate();
 
-        // Handle Resize
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
